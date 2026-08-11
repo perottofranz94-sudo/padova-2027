@@ -1,0 +1,21 @@
+PADOVA 2027 — PACCHETTO PRONTO PER GITHUB
+
+CARICA SU GITHUB:
+- index.html
+- manifest.webmanifest
+- service-worker.js
+- cartella icons completa
+
+Non serve pubblicare file SQL.
+
+IMPORTANTE:
+Mantieni esattamente i nomi e la struttura delle cartelle.
+
+Dopo il caricamento:
+1. GitHub repository > Settings > Pages
+2. Source: Deploy from a branch
+3. Branch: main
+4. Folder: /(root)
+5. Save
+
+Poi userai l'URL GitHub Pages per configurare Supabase Authentication > URL Configuration.
