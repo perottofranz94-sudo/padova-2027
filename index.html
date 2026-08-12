@@ -1,0 +1,582 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>PADOVA 2027 • AI Marathon Coach</title>
+<meta name="theme-color" content="#071018">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Padova 2027">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="application-name" content="Padova 2027 AI Coach">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="./icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
+
+<style>
+:root{--bg:#071018;--panel:#0e1a24;--line:#20303d;--txt:#eef5fb;--muted:#8da2b2;--cyan:#43d5ff;--green:#5be584;--amber:#ffc857;--red:#ff6474;--violet:#a78bfa;--shadow:0 24px 70px rgba(0,0,0,.35)}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 5% 0%,#12334a 0,transparent 28%),radial-gradient(circle at 95% 10%,#211b46 0,transparent 24%),var(--bg);color:var(--txt);font:15px/1.45 Inter,system-ui,-apple-system,Segoe UI,sans-serif}button,input,select,textarea{font:inherit}.app{max-width:1500px;margin:auto;padding:22px}.top{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:18px;padding:14px 18px;background:rgba(7,16,24,.82);backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,.06);border-radius:20px;box-shadow:var(--shadow)}.brand{display:flex;align-items:center;gap:14px}.logo{width:48px;height:48px;border-radius:16px;display:grid;place-items:center;background:linear-gradient(135deg,var(--cyan),var(--violet));font-size:24px}.brand h1{font-size:18px;margin:0;letter-spacing:.08em}.brand small{color:var(--muted)}.btn{cursor:pointer;border:1px solid var(--line);background:#13222e;color:var(--txt);padding:10px 14px;border-radius:12px;font-weight:800}.btn.primary{background:linear-gradient(135deg,#00bde7,#6f68ff);border:0}.btn.green{background:#173f2c;border-color:#255a40;color:#a9f9c3}.hero{display:grid;grid-template-columns:1.4fr .8fr;gap:16px;margin:16px 0}.card{background:linear-gradient(180deg,rgba(17,31,43,.97),rgba(11,23,32,.97));border:1px solid rgba(255,255,255,.07);border-radius:22px;box-shadow:var(--shadow)}.hero-main,.hero-side{padding:24px}.kicker{color:var(--cyan);font-weight:900;letter-spacing:.16em;font-size:12px}h2{font-size:36px;line-height:1.05;margin:8px 0 10px}.sub,.tiny{color:var(--muted)}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:22px}.stat{padding:14px;border:1px solid var(--line);background:#0a151e;border-radius:16px}.stat b{display:block;font-size:22px}.stat span{color:var(--muted);font-size:12px}.grid{display:grid;grid-template-columns:1fr 360px;gap:16px}.calendar-card{padding:18px}.side{display:flex;flex-direction:column;gap:16px}.side .card{padding:18px}.cal-head{display:flex;align-items:center;justify-content:space-between}.cal-title{font-weight:900;font-size:20px}.cal-nav{display:flex;gap:8px}.iconbtn{width:38px;height:38px;border-radius:12px;border:1px solid var(--line);background:#0c1922;color:var(--txt);font-weight:900;cursor:pointer}.weekdays,.calendar{display:grid;grid-template-columns:repeat(7,1fr)}.weekdays div{padding:10px;text-align:center;color:var(--muted);font-size:11px;font-weight:900;text-transform:uppercase}.day{min-height:125px;border:1px solid #1d2c37;padding:7px;background:rgba(8,18,25,.68)}.day.muted{opacity:.3}.date-num{font-weight:900;color:#b9c9d5;font-size:12px;margin-bottom:6px}.today .date-num{display:inline-grid;place-items:center;background:var(--cyan);color:#001019;width:28px;height:28px;border-radius:50%}.event{cursor:pointer;border:0;text-align:left;width:100%;padding:7px 8px;border-radius:10px;margin:4px 0;color:#f7fbff;font-size:11px;font-weight:800;line-height:1.25}.event.easy{background:#164d64}.event.quality{background:#6b3925}.event.long{background:#165338}.event.strength{background:#3e3370}.event.rest{background:#303944;color:#c5d0d8}.event.completed{outline:2px solid var(--green)}.event .mini{font-weight:500;opacity:.82;display:block;margin-top:2px}.legend{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.pill{font-size:11px;border-radius:999px;padding:6px 9px;border:1px solid var(--line);color:var(--muted)}.section-title{font-size:12px;text-transform:uppercase;letter-spacing:.13em;color:var(--muted);font-weight:900;margin-bottom:12px}.next{display:flex;gap:11px;padding:12px;border-radius:14px;background:#0a151e;border:1px solid var(--line);margin:8px 0;cursor:pointer}.next b{display:block}.next small{color:var(--muted)}.status{display:inline-flex;padding:7px 10px;border-radius:999px;background:#123621;color:#a7f8bf;font-weight:900;font-size:12px}.readiness{display:flex;gap:16px;align-items:center}.ring{--p:82;width:92px;height:92px;border-radius:50%;background:conic-gradient(var(--green) calc(var(--p)*1%),#22313b 0);display:grid;place-items:center;position:relative}.ring:after{content:"";width:70px;height:70px;background:var(--panel);border-radius:50%;position:absolute}.ring b{z-index:1;font-size:22px}.notice{padding:12px 14px;border-radius:14px;background:#171b33;border:1px solid #3c3c73;color:#c7c7ff;font-size:12px;margin-top:12px}.modal{position:fixed;inset:0;background:rgba(0,0,0,.68);backdrop-filter:blur(10px);display:none;place-items:center;z-index:100;padding:18px}.modal.open{display:grid}.dialog{width:min(980px,100%);max-height:92vh;overflow:auto;background:#0d1821;border:1px solid #334552;border-radius:24px;box-shadow:0 35px 120px rgba(0,0,0,.6)}.dialog-head{position:sticky;top:0;background:rgba(13,24,33,.94);backdrop-filter:blur(14px);display:flex;justify-content:space-between;align-items:center;padding:18px 22px;border-bottom:1px solid var(--line);z-index:3}.dialog-body{padding:22px}.dialog h3{margin:0;font-size:24px}.close{border:0;background:transparent;color:var(--muted);font-size:28px;cursor:pointer}.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}.info{padding:16px;border:1px solid var(--line);background:#0a151e;border-radius:16px}.info h4{margin:0 0 12px;font-size:13px;text-transform:uppercase;letter-spacing:.11em;color:var(--cyan)}.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.metric{padding:10px;border-radius:12px;background:#101f2b}.metric span{display:block;color:var(--muted);font-size:11px}.metric b{font-size:17px}label{display:block;color:#a9bac6;font-size:12px;font-weight:800;margin:10px 0 5px}input,select,textarea{width:100%;background:#07131b;border:1px solid #2a3c49;color:var(--txt);border-radius:11px;padding:10px;outline:none}.formgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}textarea{min-height:84px;resize:vertical}.analysis{padding:15px;border-radius:14px;border:1px solid #264558;background:#0a1b25;margin-top:14px}.analysis.green{border-color:#27593b;background:#0f2519}.analysis.amber{border-color:#674c23;background:#251c0e}.analysis.red{border-color:#6b2830;background:#2a1014}.tablewrap{overflow:auto;border:1px solid var(--line);border-radius:14px}table{width:100%;border-collapse:collapse;min-width:650px}th,td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:left}th{font-size:11px;color:var(--muted);text-transform:uppercase;background:#0b1720}.tabs{display:flex;gap:7px;margin-bottom:14px}.tab{cursor:pointer;padding:8px 11px;border-radius:10px;border:1px solid var(--line);background:#0b1720;color:var(--muted);font-weight:800}.tab.active{background:#1c3445;color:white}.hidden{display:none!important}.footer{text-align:center;color:var(--muted);font-size:12px;padding:26px}.scoreline{display:flex;justify-content:space-between;margin:9px 0;color:var(--muted)}.bar{height:8px;background:#25323b;border-radius:999px;overflow:hidden}.bar i{display:block;height:100%;width:50%;background:linear-gradient(90deg,var(--cyan),var(--green))}
+@media(max-width:1050px){.grid,.hero{grid-template-columns:1fr}.side{display:grid;grid-template-columns:1fr 1fr}}@media(max-width:760px){.app{padding:10px}.top{position:relative;align-items:flex-start;flex-direction:column}.stats{grid-template-columns:1fr 1fr}.side{display:flex}.day{min-height:92px;padding:5px}.event{font-size:9px;padding:5px}.weekdays div{font-size:9px}.two,.formgrid{grid-template-columns:1fr}.metrics{grid-template-columns:1fr 1fr}}
+
+/* ===== V2 UX / MOBILE / EDITOR ===== */
+body:before{content:"";position:fixed;inset:0;pointer-events:none;background-image:linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);background-size:42px 42px;mask-image:linear-gradient(to bottom,black,transparent 75%);z-index:-1}
+.event{transition:transform .16s ease,filter .16s ease,box-shadow .16s ease}.event:hover{transform:translateY(-1px);filter:brightness(1.12);box-shadow:0 10px 24px rgba(0,0,0,.28)}
+.day{transition:border-color .18s ease,background .18s ease}.day.dragover{border-color:var(--cyan);background:rgba(67,213,255,.08)}
+.event[draggable="true"]{cursor:grab}.event[draggable="true"]:active{cursor:grabbing}
+.movebox{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:end;margin-top:12px;padding:12px;border:1px dashed #355164;border-radius:14px;background:#091821}
+.movebox .datewrap{display:block;width:100%;border:1px solid #2a3c49;border-radius:11px;padding:9px 10px;background:#07131b}.movebox input[type=date]{width:100%;min-width:0;border:0;background:transparent;color:var(--txt);padding:0;outline:none;color-scheme:dark}
+.compare-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}.compare{padding:11px;border-radius:13px;background:#0b1a24;border:1px solid var(--line)}.compare span{display:block;color:var(--muted);font-size:11px}.compare b{display:block;margin-top:3px;font-size:15px}.compare.good{border-color:#2d6944;background:#0e2418}.compare.warn{border-color:#745522;background:#261d0f}.compare.bad{border-color:#76303a;background:#2b1116}.compare.neutral{border-color:#2e4657}
+.feedback-hero{padding:16px;border-radius:16px;margin-top:12px;background:linear-gradient(135deg,rgba(67,213,255,.09),rgba(167,139,250,.08));border:1px solid #31495a}.feedback-hero h4{margin:0 0 6px}.feedback-hero p{margin:0;color:#b7c8d4}
+.timerdock{position:sticky;bottom:10px;z-index:6;margin-top:14px;padding:14px;border-radius:18px;background:rgba(7,18,26,.94);backdrop-filter:blur(15px);border:1px solid #335064;display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center}.timerface{font-variant-numeric:tabular-nums;font-size:30px;font-weight:950;letter-spacing:.04em}.timerlabel{color:var(--muted);font-size:11px}.timerbuttons{display:flex;gap:7px;flex-wrap:wrap}.timerpreset{border:1px solid #314554;background:#0d1e29;color:var(--txt);border-radius:10px;padding:7px 9px;font-weight:800}.timerpreset.active{border-color:var(--cyan);color:#b9f2ff}.timer-start{background:linear-gradient(135deg,#1dbf74,#00a6cc);border:0;color:white}.timer-stop{background:#3a2430;border-color:#6c3648}
+.exercise-action{white-space:nowrap}.restbtn{border:1px solid #36536a;background:#102431;color:#c6eafb;border-radius:9px;padding:6px 8px;font-weight:800;font-size:11px}
+.storage-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 9px;border:1px solid var(--line);border-radius:999px;color:var(--muted);font-size:11px}.storage-chip.ok{color:#a8f7bf;border-color:#285b3d;background:#10271a}
+.mobile-note{display:none}
+@media(max-width:760px){.top-actions{width:100%;display:grid;grid-template-columns:1fr 1fr}.top-actions .btn{padding:9px 8px;font-size:12px}.calendar-card{padding:10px}.day{min-height:102px}.event .mini{display:none}.event{min-height:34px}.movebox{grid-template-columns:1fr}.compare-grid{grid-template-columns:1fr 1fr}.timerdock{grid-template-columns:1fr}.timerface{font-size:34px}.mobile-note{display:block}.dialog{border-radius:18px}.dialog-body{padding:14px}.dialog-head{padding:14px}.metrics{grid-template-columns:1fr 1fr}.formgrid{grid-template-columns:1fr 1fr}.tablewrap{font-size:12px}}
+@media(max-width:430px){.stats{grid-template-columns:1fr 1fr}.formgrid{grid-template-columns:1fr}.compare-grid{grid-template-columns:1fr 1fr}.weekdays div{padding:7px 2px}.day{min-height:88px}.event{font-size:9px}}
+</style>
+<style>
+@media (display-mode: standalone) {
+  body { padding-top: env(safe-area-inset-top); }
+  #installAppBtn { display:none; }
+}
+.update-toast{
+  position:fixed;right:16px;bottom:16px;z-index:200;
+  max-width:360px;padding:14px 16px;border-radius:16px;
+  background:#102331;border:1px solid #3c5a6e;color:var(--txt);
+  box-shadow:0 18px 55px rgba(0,0,0,.38);display:none
+}
+.update-toast.show{display:block}
+.update-toast b{display:block;margin-bottom:4px}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+.sync-ok{color:#a9f9c3!important;border-color:#255a40!important;background:#173f2c!important}
+.sync-warn{color:#ffe3a6!important;border-color:#6d552a!important;background:#2b2110!important}
+#authModal{z-index:500}
+#authModal .dialog{box-shadow:0 45px 140px rgba(0,0,0,.72)}
+.cloud-flash{animation:cloudFlash .75s ease}
+@keyframes cloudFlash{0%{filter:brightness(1)}50%{filter:brightness(1.45)}100%{filter:brightness(1)}}
+</style>
+
+<style>
+.strength-log{display:grid;gap:12px}
+.strength-exercise{padding:14px;border:1px solid var(--line);background:#0a151e;border-radius:14px}
+.strength-ex-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.strength-bodyweight{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:12px;white-space:nowrap}
+.strength-bodyweight input{width:auto}
+.strength-sets{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:10px}
+.strength-set{display:grid;grid-template-columns:auto 1fr 1fr;gap:6px;align-items:center;padding:8px;border:1px solid #263845;border-radius:10px;background:#0d1b25}
+.strength-set input{padding:8px}
+.set-badge{font-size:11px;font-weight:900;color:var(--cyan)}
+.strength-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+@media(max-width:700px){.strength-summary{grid-template-columns:1fr 1fr}.strength-sets{grid-template-columns:1fr 1fr}.strength-ex-head{flex-direction:column}}
+</style>
+</head>
+<body><div class="app">
+<header class="top"><div class="brand"><div class="logo">🏃</div><div><h1>PADOVA 2027 • AI COACH</h1><small>Francesco • Marathon Project • 18 aprile 2027</small></div></div><div class="top-actions">
+<button class="btn" id="installAppBtn" onclick="openInstallHelp()">＋ Installa app</button>
+<button class="btn" onclick="manualCloudSync()">☁ Sincronizza</button>
+<button class="btn" onclick="exportData()">Esporta dati</button>
+<span id="cloudChip" class="storage-chip">○ cloud disconnesso</span>
+<button class="btn" id="accountBtn" onclick="openAccount()">Account</button>
+<button class="btn primary" onclick="openAIHub()">✦ AI Coach Sync</button>
+</div></header>
+<section class="hero"><div class="card hero-main"><div class="kicker">MARATHON BUILD • BLOCK 1</div><h2>Train smart.<br>Arrive ready.</h2><div class="sub">Calendario operativo, confronto previsto/realizzato, diario, palestra completa e motore decisionale. I dati restano nel browser finché non li esporti.</div><div class="stats"><div class="stat"><b>3h30</b><span>Target Padova</span></div><div class="stat"><b>4'58″</b><span>Ritmo gara target</span></div><div class="stat"><b id="weekKm">—</b><span>Km settimana</span></div><div class="stat"><b id="painNow">1/10</b><span>Dolore ultimo dato</span></div></div></div><div class="card hero-side"><div class="section-title">Readiness Coach</div><div class="readiness"><div class="ring" id="readinessRing"><b id="readinessNum">82</b></div><div><span class="status" id="readinessStatus">● READY</span><h3>Carico gestibile</h3><div class="tiny" id="readinessText">Ultima seduta: RPE 3, dolore basso, gambe normali.</div></div></div><div class="notice">Indicatore operativo, non medico. Dolore crescente o alterazione della tecnica prevalgono sempre sul punteggio.</div></div></section>
+<main class="grid"><section class="card calendar-card"><div class="cal-head"><div><div class="section-title">Calendario allenamenti</div><div class="cal-title" id="calTitle"></div></div><div class="cal-nav"><button class="iconbtn" onclick="moveMonth(-1)">‹</button><button class="iconbtn" onclick="goToday()">●</button><button class="iconbtn" onclick="moveMonth(1)">›</button></div></div><div class="legend"><span class="pill">🔵 Easy</span><span class="pill">🟠 Qualità</span><span class="pill">🟢 Lungo</span><span class="pill">🟣 Palestra</span><span class="pill">bordo verde = completato</span></div><div class="weekdays"><div>Lun</div><div>Mar</div><div>Mer</div><div>Gio</div><div>Ven</div><div>Sab</div><div>Dom</div></div><div class="calendar" id="calendar"></div></section><aside class="side"><section class="card"><div class="section-title">Prossimi allenamenti</div><div id="nextEvents"></div></section><section class="card"><div class="section-title">Coach Engine</div><div class="scoreline"><span>Aderenza</span><b id="adherence">—</b></div><div class="bar"><i id="adherenceBar"></i></div><div class="scoreline"><span>Dolore/integrità</span><b id="injuryState">Basso</b></div><button class="btn primary" style="width:100%;margin-top:10px" onclick="openAIHub()">Apri AI Coach Sync</button></section><section class="card">
+<div class="section-title">Cloud & atleta</div>
+<div id="cloudUserLine" style="font-weight:850">Non connesso</div>
+<div class="tiny" id="cloudSyncLine">Accedi per sincronizzare iPhone e Mac.</div>
+<div class="scoreline"><span>Profilo atleta</span><b id="profileState">—</b></div>
+<div class="scoreline"><span>Ultima sync</span><b id="lastSync">—</b></div>
+<button class="btn" style="width:100%;margin-top:10px" onclick="manualCloudSync()">Sincronizza adesso</button>
+</section><section class="card"><div class="section-title">Principio guida</div><div style="font-size:19px;font-weight:900">La continuità viene prima dell'eroismo.</div><p class="tiny">Nessun allenamento saltato viene “recuperato” aggiungendolo al giorno successivo.</p></section></aside></main><div class="footer">PADOVA 2027 • CLOUD 3.2 • strength logging</div></div>
+<div class="modal" id="workoutModal"><div class="dialog"><div class="dialog-head"><div><div class="kicker" id="mPhase"></div><h3 id="mTitle"></h3></div><button class="close" onclick="closeModal('workoutModal')">×</button></div><div class="dialog-body" id="modalBody"></div></div></div>
+
+
+<div class="modal open" id="authModal">
+  <div class="dialog" style="max-width:560px">
+    <div class="dialog-head">
+      <div><div class="kicker">PADOVA 2027 CLOUD</div><h3>Accedi al tuo coach</h3></div>
+    </div>
+    <div class="dialog-body">
+      <div class="notice">Usa l'account creato in Supabase. Dopo il login il calendario viene sincronizzato tra i tuoi dispositivi.</div>
+      <label>Email</label>
+      <input id="loginEmail" type="email" autocomplete="email" placeholder="nome@email.it">
+      <label>Password</label>
+      <input id="loginPassword" type="password" autocomplete="current-password" placeholder="Password">
+      <button class="btn primary" style="width:100%;margin-top:14px" onclick="cloudLogin()">Accedi</button>
+      <button class="btn" style="width:100%;margin-top:8px" onclick="sendMagicLink()">Invia link di accesso via email</button>
+      <div id="authMsg" class="tiny" style="margin-top:12px"></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="accountModal">
+  <div class="dialog" style="max-width:700px">
+    <div class="dialog-head"><div><div class="kicker">ACCOUNT & CLOUD</div><h3>Il tuo profilo</h3></div><button class="close" onclick="closeModal('accountModal')">×</button></div>
+    <div class="dialog-body">
+      <div class="info">
+        <h4>Account</h4>
+        <p><b id="accountEmail">—</b></p>
+        <p class="tiny">I dati sono protetti dalle policy RLS del database e associati al tuo User UID.</p>
+        <button class="btn" onclick="manualCloudSync()">☁ Sincronizza adesso</button>
+        <button class="btn" onclick="cloudLogout()">Esci</button>
+      </div>
+      <div class="info" style="margin-top:16px">
+        <h4>Profilo atleta cloud</h4>
+        <div id="profilePreview" class="tiny">Caricamento…</div>
+      </div>
+      <div class="info" style="margin-top:16px">
+        <h4>🔐 Imposta / cambia password</h4>
+        <p class="tiny">La password viene inviata direttamente a Supabase e non viene salvata nell'app.</p>
+        <label>Nuova password</label>
+        <input id="newAccountPassword" type="password" autocomplete="new-password" placeholder="Almeno 8 caratteri">
+        <label>Conferma password</label>
+        <input id="confirmAccountPassword" type="password" autocomplete="new-password" placeholder="Ripeti la password">
+        <button class="btn primary" style="width:100%;margin-top:12px" onclick="setAccountPassword()">Salva nuova password</button>
+        <div id="passwordMsg" class="tiny" style="margin-top:10px"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="installModal">
+  <div class="dialog">
+    <div class="dialog-head">
+      <div><div class="kicker">INSTALLAZIONE PWA</div><h3>📲 Installa Padova 2027</h3></div>
+      <button class="close" onclick="closeModal('installModal')">×</button>
+    </div>
+    <div class="dialog-body">
+      <div class="two">
+        <div class="info">
+          <h4>iPhone / iPad</h4>
+          <ol style="padding-left:20px;line-height:1.7">
+            <li>Apri il sito in <b>Safari</b>.</li>
+            <li>Tocca <b>Condividi</b>.</li>
+            <li>Scegli <b>Aggiungi alla schermata Home</b>.</li>
+            <li>Attiva <b>Apri come app web</b>, se disponibile.</li>
+            <li>Tocca <b>Aggiungi</b>.</li>
+          </ol>
+          <div class="notice">Da quel momento Padova 2027 avrà la sua icona e si aprirà quasi come un'app nativa.</div>
+        </div>
+        <div class="info">
+          <h4>Android / Chrome / Computer</h4>
+          <p>Se il browser supporta l'installazione automatica, usa il pulsante qui sotto.</p>
+          <button class="btn primary" id="nativeInstallBtn" onclick="triggerNativeInstall()">Installa ora</button>
+          <p class="tiny">Se il pulsante non è disponibile, apri il menu del browser e scegli “Installa app” o “Aggiungi a schermata Home”.</p>
+        </div>
+      </div>
+      <div class="info" style="margin-top:16px">
+        <h4>Dati e aggiornamenti</h4>
+        <p>I tuoi dati vengono salvati nel browser sul dispositivo. L'app funziona anche offline dopo la prima apertura. Quando pubblichi una nuova versione sullo stesso indirizzo, il service worker la rileva; puoi forzare il controllo con “Aggiorna app”.</p>
+        <button class="btn" onclick="forceAppUpdate()">↻ Aggiorna app</button>
+        <button class="btn" onclick="requestPersistentStorage()">Proteggi salvataggio</button>
+        <div id="pwaStatus" class="tiny" style="margin-top:10px"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="aiModal"><div class="dialog"><div class="dialog-head"><div><div class="kicker">CHATGPT COACH BRIDGE</div><h3>✦ AI Coach Sync</h3></div><button class="close" onclick="closeModal('aiModal')">×</button></div><div class="dialog-body"><div class="notice"><b>AI integrata in modo sicuro:</b> il file genera un pacchetto completo da incollare in questa chat. Poi puoi incollare qui il JSON restituito dal coach e il calendario si aggiorna automaticamente. Una connessione diretta e autonoma alla conversazione richiede un backend/app dedicato: non inserire chiavi API nel browser.</div><div class="two" style="margin-top:16px"><div class="info"><h4>1 • Genera pacchetto</h4><button class="btn primary" onclick="generateCoachPacket()">Genera</button><textarea id="coachPacket" style="height:260px;margin-top:10px" readonly></textarea><button class="btn" onclick="copyPacket()">Copia</button></div><div class="info"><h4>2 • Applica risposta AI</h4><textarea id="aiResponse" style="height:260px" placeholder='{"updates":[{"id":"2026-08-13-easy-strides","details":{"km":7,"pace":"5&apos;25–5&apos;50/km"},"coachNote":"Ridotto per recupero"}]}'></textarea><button class="btn green" onclick="applyAIResponse()">Applica al calendario</button><div id="aiApplyMsg" class="tiny"></div></div></div></div></div></div>
+<script>
+const TODAY=new Date('2026-08-11T12:00:00');let currentMonth=new Date('2026-08-01T12:00:00');
+const STRENGTH={warmup:[['Cardio leggero','5′','Facile'],['Good morning','3×10','Controllato'],['Dead bug','3×10','Controllato'],['Hip airplane','2×8/lato','Controllato'],['Glute bridge','2×12','Controllato'],['Mobilità anche/caviglie','2′','Fluida']],A:[['Stacco rumeno bilanciere','Progressione 5 settimane','120″','3″ eccentrica'],['Lat machine','Progressione 5 settimane','90″','RIR 1–2'],['Rematore bilanciere','Progressione 5 settimane','90″','RIR 1–2'],['Pulley','3×10–12','60″','2″ fermo'],['Affondi posteriori manubri','4×8/lato','90″','3″ eccentrica • circa 10 kg/manubrio'],['Curl manubri inclinata','3×10','60″','Controllato'],['Farmer walk','4×40″','60″','Tronco stabile']],B:[['Panca piana bilanciere','Progressione 5 settimane','120″','RIR 1–2'],['Panca inclinata manubri','4×8','90″','3″ eccentrica + 1″ max allungamento'],['Shoulder press manubri','4×6–8','90″','Tecnica pulita'],['Croci + Push-up','3 serie','90″','Croci x10 + push-up quasi cedimento'],['Bulgarian split squat','Progressione 5 settimane','90″','Controllo monopodalico'],['Step-up manubri','3×8/lato','90″','Controllato'],['Calf raise','4×15','60″','2″ fermo'],['Plank','3×45–60″','45″','Core']],progression:[['Stacco rumeno','4×8','4×7','5×6','5×5','3×6'],['Panca piana','4×8','4×7','5×6','5×5','3×6'],['Lat machine','3×10','4×10','4×8','5×8','2×10'],['Rematore','3×10','4×10','4×8','5×8','2×10'],['Bulgarian split squat','3×10','3×10 + carico','4×8','4×8 + carico','2×10']],cooldown:[['Child pose','2×30″'],['Flessori anca','2×45″'],['Polpacci + quadricipiti','2×30″']]};
+const DEFAULT_EVENTS=[];function add(id,date,type,title,phase,summary,km,pace,rpe,duration,notes,fuel='Acqua'){DEFAULT_EVENTS.push({id,date,type,title,phase,status:'planned',summary,details:{km,pace,rpe,duration,goal:summary,notes,fuel}})}
+add('2026-08-10-strength-a','2026-08-10','strength','Palestra A','Transizione','Forza • volume -20/30%',0,'—','5–6/10','70–80′','Niente cedimento; RIR 2–3.','Idratazione normale');add('2026-08-11-easy','2026-08-11','easy','Easy Run','Transizione','Previsto 7–8 km easy',8,"5'20–5'50/km",'2–3/10','42–47′','Stop se dolore quadricipite cresce.');DEFAULT_EVENTS.at(-1).status='completed';DEFAULT_EVENTS.at(-1).actual={distance:11.84,duration:'1:00:32',pace:'5:07',hrAvg:159,hrMax:237,rpe:3,painQuad:2,painKnee:1,legs:'Normali',temp:27,elev:72,power:260,tss:144,if:1.17,notes:'Fastidio quadricipite solo all’inizio, poi ok. FC max probabilmente artefatto.'};add('2026-08-12-strength-b','2026-08-12','strength','Palestra B','Transizione','Forza • volume -20/30%',0,'—','5–6/10','70–80′','No cedimento; se dolore >3/10 riduci ROM.');add('2026-08-13-easy-strides','2026-08-13','easy','Easy + Allunghi','Transizione','8–9 km + 4×20″',9,"Easy 5'20–5'50/km",'3–4/10','~50′','4×20″, recupero 60–90″. Niente sprint.');add('2026-08-14-rest','2026-08-14','rest','Riposo','Transizione','Riposo completo',0,'—','1/10','—','Giorno libero.','—');add('2026-08-16-long','2026-08-16','long','Lungo Easy','Transizione','14–16 km easy',15,"5'15–5'40/km",'3–4/10','~1h20','Se quadricipite presente: 10–12 km.','30–40 g carbo/h se >75′');
+[['2026-08-17','strength','Palestra A','Ponte','Forza • Giorno A',0,'—','6–8/10','~90′','RIR 1–2.'],['2026-08-18','easy','Easy Run','Ponte','8 km easy',8,"5'15–5'45/km",'2–3/10','~43′','Sensazione prima del ritmo.'],['2026-08-19','strength','Palestra B','Ponte','Forza • Giorno B',0,'—','6–8/10','~90′','RIR 1–2.'],['2026-08-20','quality','6×800','Ponte','Qualità leggera • 10 km totali',10,"800 m @ 4'15–4'20/km",'6/10','50–55′','2′ jogging; non all-out.'],['2026-08-21','rest','Riposo','Ponte','Riposo completo',0,'—','1/10','—','Non recuperare sedute perse.'],['2026-08-23','long','Lungo Easy','Ponte','16–18 km easy',17,"5'15–5'40/km",'3–4/10','~1h30','Scegli 16 km se stanchezza alta.'],['2026-08-24','strength','Palestra A','Ponte','Forza • Giorno A',0,'—','6–8/10','~90′','RIR 1–2.'],['2026-08-25','easy','Easy + Allunghi','Ponte','9 km + 4×20″',9,"5'15–5'40/km",'2–3/10','~48′','4×20″, recupero 60–90″.'],['2026-08-26','strength','Palestra B','Ponte','Forza • Giorno B',0,'—','6–8/10','~90′','RIR 1–2.'],['2026-08-27','quality','3×2 km','Ponte','Qualità • 11 km totali',11,"4'20–4'25/km",'6–7/10','~55′','3′ jogging; finire controllato.'],['2026-08-28','rest','Riposo','Ponte','Riposo completo',0,'—','1/10','—','Giorno libero.'],['2026-08-30','long','Lungo Easy','Ponte','18 km easy',18,"5'15–5'40/km",'3–4/10','~1h35','Controllato.'],['2026-08-31','strength','Palestra A','W1','Forza • Giorno A',0,'—','6–8/10','~90′','Se DOMS elevati, riduci accessori gambe.'],['2026-09-01','easy','Easy Run','W1','8 km easy',8,"5'15–5'45/km",'2–3/10','~43′','Non inseguire 5:00/km.'],['2026-09-02','strength','Palestra B','W1','Forza • Giorno B',0,'—','6–8/10','~90′','Qualità il giorno dopo: niente extra volume.'],['2026-09-03','quality','5×800','W1','Qualità • 10 km totali',10,"800 m @ 4'15–4'20/km",'6–7/10','~50′','2′ jogging.'],['2026-09-04','rest','Riposo','W1','Riposo completo',0,'—','1/10','—','Giorno libero.'],['2026-09-06','long','Lungo Easy','W1','16 km easy',16,"5'15–5'40/km",'3–4/10','~1h25','Nessuna progressione finale.'],['2026-09-07','strength','Palestra A','W2','Forza • Giorno A',0,'—','6–8/10','~90′','RIR 1–2.'],['2026-09-08','easy','Easy + Allunghi','W2','9 km + 4×20″',9,"5'15–5'40/km",'2–3/10','~48′','4×20″.'],['2026-09-09','strength','Palestra B','W2','Forza • Giorno B',0,'—','6–8/10','~90′','Non cercare DOMS.'],['2026-09-10','quality','3×2 km','W2','Qualità • 11 km totali',11,"4'20–4'25/km",'6–7/10','~55′','3′ jogging.'],['2026-09-11','rest','Riposo','W2','Riposo completo',0,'—','1/10','—','Giorno libero.'],['2026-09-13','long','Lungo Easy','W2','18 km easy',18,"5'15–5'40/km",'3–4/10','~1h35','Ultimi 3 km 5:05–5:15 solo se molto facile.'],['2026-09-14','strength','Palestra A','W3','Forza • Giorno A',0,'—','6–8/10','~90′','Picco corsa: non aggiungere volume.'],['2026-09-15','easy','Easy + Allunghi','W3','9 km + 4×20″',9,"5'15–5'40/km",'2–3/10','~48′','Controllato.'],['2026-09-16','strength','Palestra B','W3','Forza • Giorno B',0,'—','6–8/10','~90′','Lascia margine per la qualità.'],['2026-09-17','quality','6×1 km','W3','Qualità • 11 km totali',11,"1 km @ 4'15–4'20/km",'6–7/10','~55′','90″ jogging.'],['2026-09-18','rest','Riposo','W3','Riposo completo',0,'—','1/10','—','Giorno libero.'],['2026-09-20','long','Lungo Progressivo','W3','20 km • 16 easy + 4 controllati',20,"16 km 5'15–5'35; ultimi 4 km 5'00–5'10",'4–5/10','~1h45','Progressione solo se RPE ≤5 e nessun dolore.'],['2026-09-21','strength','Palestra A','W4 Scarico','Forza • scarico',0,'—','5–6/10','60–70′','Ridurre volume.'],['2026-09-22','easy','Easy Run','W4 Scarico','7–8 km easy',8,"5'20–5'50/km",'2–3/10','~43′','Scarico.'],['2026-09-23','strength','Palestra B','W4 Scarico','Forza • scarico',0,'—','5–6/10','60–70′','Ridurre volume.'],['2026-09-24','quality','3×1 km','W4 Scarico','Qualità leggera • 8–9 km',9,"4'20–4'25/km",'5–6/10','~45′','2′ jogging; niente gara.'],['2026-09-25','rest','Riposo','W4 Scarico','Riposo completo',0,'—','1/10','—','Giorno libero.'],['2026-09-27','long','Lungo Easy','W4 Scarico','15–16 km easy',16,"5'20–5'45/km",'3–4/10','~1h25','Scarico.']].forEach((x,i)=>add(x[0]+'-'+x[1],...x));
+let events=(()=>{try{return JSON.parse(localStorage.getItem('padova2027_events_v1'))||structuredClone(DEFAULT_EVENTS)}catch(e){return structuredClone(DEFAULT_EVENTS)}})();function save(){localStorage.setItem('padova2027_events_v1',JSON.stringify(events));refresh()};const pad=n=>String(n).padStart(2,'0'),iso=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()),parse=s=>{let[a,b,c]=s.split('-').map(Number);return new Date(a,b-1,c,12)},fmt=s=>parse(s).toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long',year:'numeric'}),icon=t=>({easy:'◌',quality:'⚡',long:'↗',strength:'◆',rest:'—'}[t]||'•');
+function renderCalendar(){let y=currentMonth.getFullYear(),m=currentMonth.getMonth(),first=new Date(y,m,1,12),off=(first.getDay()+6)%7,start=new Date(y,m,1-off,12),h='';document.getElementById('calTitle').textContent=currentMonth.toLocaleDateString('it-IT',{month:'long',year:'numeric'});for(let i=0;i<42;i++){let d=new Date(start);d.setDate(start.getDate()+i);let ds=iso(d),evs=events.filter(e=>e.date===ds);h+=`<div class="day ${d.getMonth()===m?'':'muted'} ${ds===iso(TODAY)?'today':''}" data-date="${ds}" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropEvent(event,'${ds}')"><div class="date-num">${d.getDate()}</div>${evs.map(e=>`<button class="event ${e.type} ${e.status==='completed'?'completed':''}" draggable="true" ondragstart="dragStart(event,'${e.id}')" onclick="openWorkout('${e.id}')">${icon(e.type)} ${e.title}<span class="mini">${e.summary}</span></button>`).join('')}</div>`}document.getElementById('calendar').innerHTML=h}
+let draggingId=null;function dragStart(ev,id){draggingId=id;ev.dataTransfer.effectAllowed='move';ev.dataTransfer.setData('text/plain',id)}function dragOver(ev){ev.preventDefault();ev.currentTarget.classList.add('dragover')}function dragLeave(ev){ev.currentTarget.classList.remove('dragover')}function dropEvent(ev,date){ev.preventDefault();ev.currentTarget.classList.remove('dragover');let id=ev.dataTransfer.getData('text/plain')||draggingId;if(id)moveWorkout(id,date,true)}
+function moveMonth(n){currentMonth=new Date(currentMonth.getFullYear(),currentMonth.getMonth()+n,1,12);renderCalendar()}function goToday(){currentMonth=new Date(TODAY.getFullYear(),TODAY.getMonth(),1,12);renderCalendar()}
+function recSeconds(txt){let n=parseInt(String(txt));return Number.isFinite(n)?n:60}
+function strengthHTML(e){let day=e.title.includes('A')?'A':'B',rows=STRENGTH[day].map(r=>`<tr><td><b>${r[0]}</b></td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td class="exercise-action"><button class="restbtn" onclick="setRestTimer(${recSeconds(r[2])},'${String(r[0]).replace(/'/g,"\\'")}')">⏱ ${r[2]}</button></td></tr>`).join(''),warm=STRENGTH.warmup.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join(''),prog=STRENGTH.progression.map(r=>`<tr>${r.map(x=>`<td>${x}</td>`).join('')}</tr>`).join(''),cool=STRENGTH.cooldown.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('');return `<div class="info" style="margin-top:16px"><h4>Programma palestra completo</h4><div class="tabs"><button class="tab active" onclick="showTab(this,'smain')">Giorno ${day}</button><button class="tab" onclick="showTab(this,'swarm')">Warm-up</button><button class="tab" onclick="showTab(this,'sprog')">Progressioni</button><button class="tab" onclick="showTab(this,'scool')">Defaticamento</button></div><div id="smain" class="stab"><div class="tablewrap"><table><tr><th>Esercizio</th><th>Serie × reps</th><th>Rec.</th><th>Note</th><th>Timer</th></tr>${rows}</table></div></div><div id="swarm" class="stab hidden"><div class="tablewrap"><table><tr><th>Esercizio</th><th>Volume</th><th>Nota</th></tr>${warm}</table></div></div><div id="sprog" class="stab hidden"><div class="tablewrap"><table><tr><th>Esercizio</th><th>Sett.1</th><th>Sett.2</th><th>Sett.3</th><th>Sett.4</th><th>Sett.5 deload</th></tr>${prog}</table></div></div><div id="scool" class="stab hidden"><div class="tablewrap"><table><tr><th>Esercizio</th><th>Volume</th></tr>${cool}</table></div></div><div class="notice">Tecnica pulita • RIR 1–2 sui fondamentali • accessori controllati • ginocchio &gt;3/10 → riduci ROM o sostituisci affondi.</div>${timerHTML()}</div>`}
+function timerHTML(){return `<div class="timerdock"><div><div class="timerlabel">RECUPERO</div><div class="timerface" id="timerFace">01:30</div></div><div><div class="timerlabel" id="timerExercise">Timer palestra</div><div class="timerbuttons"><button class="timerpreset" onclick="setRestTimer(45,'Recupero')">45s</button><button class="timerpreset" onclick="setRestTimer(60,'Recupero')">60s</button><button class="timerpreset" onclick="setRestTimer(90,'Recupero')">90s</button><button class="timerpreset" onclick="setRestTimer(120,'Recupero')">120s</button></div></div><div class="timerbuttons"><button class="timerpreset timer-start" onclick="startTimer()">▶ Start</button><button class="timerpreset timer-stop" onclick="pauseTimer()">Ⅱ</button><button class="timerpreset" onclick="resetTimer()">↺</button></div></div>`}
+let timerTotal=90,timerLeft=90,timerHandle=null,timerRunning=false;function drawTimer(){let f=document.getElementById('timerFace');if(!f)return;let m=Math.floor(timerLeft/60),sec=timerLeft%60;f.textContent=String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0')}function setRestTimer(sec,label){pauseTimer();timerTotal=timerLeft=sec;let l=document.getElementById('timerExercise');if(l)l.textContent=label||'Recupero';drawTimer()}function startTimer(){if(timerRunning)return;timerRunning=true;timerHandle=setInterval(()=>{timerLeft=Math.max(0,timerLeft-1);drawTimer();if(timerLeft<=0){pauseTimer();let f=document.getElementById('timerFace');if(f){f.textContent='VAI!';f.style.color='var(--green)'}}},1000)}function pauseTimer(){timerRunning=false;if(timerHandle){clearInterval(timerHandle);timerHandle=null}}function resetTimer(){pauseTimer();timerLeft=timerTotal;let f=document.getElementById('timerFace');if(f)f.style.color='';drawTimer()}
+function showTab(b,id){b.parentElement.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');b.closest('.info').querySelectorAll('.stab').forEach(x=>x.classList.add('hidden'));document.getElementById(id).classList.remove('hidden')}
+function paceSecs(p){if(!p)return null;let m=String(p).match(/(\d+)[:'](\d+)/);return m?+m[1]*60+ +m[2]:null}function paceFmt(sec){if(sec==null||!isFinite(sec))return'—';let m=Math.floor(sec/60),s=Math.round(sec%60);return m+':'+String(s).padStart(2,'0')+'/km'}function paceRange(txt){if(!txt)return null;let m=String(txt).match(/(\d+)'(\d+)[^\d]+(\d+)'(\d+)/);return m?[+m[1]*60+ +m[2],+m[3]*60+ +m[4]]:null}function rpeRange(txt){if(!txt)return null;let m=String(txt).match(/(\d+(?:\.\d+)?)\s*[–-]\s*(\d+(?:\.\d+)?)/);return m?[+m[1],+m[2]]:null}
+function comparisonHTML(e){if(!e.actual)return'';let a=e.actual,d=e.details||{},cards=[];let pk=d.km||0;if(a.distance!=null&&pk){let pct=(a.distance-pk)/pk*100,cls=Math.abs(pct)<=10?'good':Math.abs(pct)<=20?'warn':'bad';cards.push(`<div class="compare ${cls}"><span>Distanza</span><b>${a.distance.toFixed(2)} vs ${pk} km</b><small>${pct>=0?'+':''}${pct.toFixed(0)}%</small></div>`)}let pr=paceRange(d.pace),ap=paceSecs(a.pace);if(pr&&ap){let cls=ap>=pr[0]&&ap<=pr[1]?'good':(Math.min(Math.abs(ap-pr[0]),Math.abs(ap-pr[1]))<=10?'warn':'bad');let delta=ap<pr[0]?`Più veloce di ${pr[0]-ap}s/km`:ap>pr[1]?`Più lento di ${ap-pr[1]}s/km`:'Nel range';cards.push(`<div class="compare ${cls}"><span>Ritmo</span><b>${a.pace}/km</b><small>${delta}</small></div>`)}let rr=rpeRange(d.rpe);if(a.rpe!=null&&rr){let cls=a.rpe>=rr[0]&&a.rpe<=rr[1]?'good':Math.abs(a.rpe-(a.rpe<rr[0]?rr[0]:rr[1]))<=1?'warn':'bad';cards.push(`<div class="compare ${cls}"><span>RPE</span><b>${a.rpe} vs ${d.rpe}</b><small>${a.rpe<rr[0]?'Più facile':a.rpe>rr[1]?'Più duro':'Centrato'}</small></div>`)}if(a.hrAvg!=null)cards.push(`<div class="compare neutral"><span>FC media</span><b>${a.hrAvg} bpm</b><small>${a.hrMax>215?'Picco max sospetto':'dato registrato'}</small></div>`);return `<div class="compare-grid">${cards.join('')}</div>`}
+function coachFeedback(e){if(!e.actual)return'';let a=e.actual,d=e.details||{},pain=Math.max(a.painQuad||0,a.painKnee||0),parts=[];if(pain<=2)parts.push('dolore basso');else if(pain<=4)parts.push('dolore da monitorare');else parts.push('dolore alto');let pr=paceRange(d.pace),ap=paceSecs(a.pace);if(pr&&ap){if(ap<pr[0]-10)parts.push('ritmo molto più rapido del previsto');else if(ap<pr[0])parts.push('ritmo leggermente più rapido');else if(ap>pr[1]+10)parts.push('ritmo più lento del previsto');else parts.push('ritmo coerente col target')}if(a.rpe!=null)parts.push('RPE '+a.rpe+'/10');let verdict=pain>=5?'Seduta da non usare per aumentare il carico.':pain>=3?'Prossima corsa da adattare in base alla risposta a 24 ore.':'Risposta complessivamente positiva: manteniamo disciplina e non aumentiamo automaticamente la seduta successiva.';return `<div class="feedback-hero"><h4>Feedback del coach</h4><p>${parts.join(' • ')}.<br><b>${verdict}</b></p></div>`}
+function form(e){
+  if(e.type==='strength') return strengthForm(e);
+  let a=e.actual||{};
+  return `<div class="info"><h4>Dati reali corsa</h4><div class="formgrid"><div><label>Km</label><input id="d1" type="number" step=".01" value="${a.distance??''}"></div><div><label>Durata</label><input id="d2" value="${a.duration??''}"></div><div><label>Ritmo</label><input id="d3" value="${a.pace??''}"></div><div><label>FC media</label><input id="d4" type="number" value="${a.hrAvg??''}"></div><div><label>FC max</label><input id="d5" type="number" value="${a.hrMax??''}"></div><div><label>RPE 0–10</label><input id="d6" type="number" value="${a.rpe??''}"></div><div><label>Dolore quad</label><input id="d7" type="number" value="${a.painQuad??''}"></div><div><label>Dolore ginocchio</label><input id="d8" type="number" value="${a.painKnee??''}"></div><div><label>Gambe</label><select id="d9"><option></option>${['Fresche','Normali','Pesanti'].map(x=>`<option ${a.legs===x?'selected':''}>${x}</option>`).join('')}</select></div><div><label>Temperatura °C</label><input id="d10" type="number" value="${a.temp??''}"></div><div><label>D+ m</label><input id="d11" type="number" value="${a.elev??''}"></div><div><label>Potenza media W</label><input id="d12" type="number" value="${a.power??''}"></div><div><label>TSS</label><input id="d13" type="number" value="${a.tss??''}"></div><div><label>IF</label><input id="d14" type="number" step=".01" value="${a.if??''}"></div></div><label>Note</label><textarea id="d15">${a.notes??''}</textarea><button class="btn green" onclick="saveActual('${e.id}')">Salva + analizza</button><div>${analysis(e)}</div></div>`
+}
+function inferSets(plan){const m=String(plan||'').match(/(\d+)x/i);if(m)return Math.min(6,Number(m[1]));if(/progressione/i.test(String(plan||'')))return 5;return 3}
+function safeAttr(s){return String(s??'').replace(/"/g,'&quot;')}
+function strengthForm(e){
+  let a=e.actual||{},day=e.title.includes('A')?'A':'B',saved=a.strengthSets||{};
+  let rows=STRENGTH[day].map(r=>{let ex=r[0],edata=saved[ex]||{},n=inferSets(r[1]),sets='';
+    for(let i=0;i<n;i++){let sd=(edata.sets||[])[i]||{};sets+=`<div class="strength-set"><span class="set-badge">S${i+1}</span><input class="s-load" data-ex="${safeAttr(ex)}" data-set="${i}" type="number" step=".5" placeholder="kg" value="${sd.load??''}"><input class="s-reps" data-ex="${safeAttr(ex)}" data-set="${i}" type="number" step="1" placeholder="rep" value="${sd.reps??''}"></div>`}
+    return `<div class="strength-exercise"><div class="strength-ex-head"><div><b>${ex}</b><div class="tiny">${r[1]} • recupero ${r[2]} • ${r[3]}</div></div><label class="strength-bodyweight"><input class="s-bw" data-ex="${safeAttr(ex)}" type="checkbox" ${edata.bodyweight?'checked':''}> Corpo libero</label></div><div class="strength-sets">${sets}</div><div class="tiny" style="margin-top:6px">Carico = peso totale usato nella serie. Se è a corpo libero, spunta l'opzione.</div></div>`}).join('');
+  return `<div class="info"><h4>Dati reali palestra</h4><div class="strength-summary"><div class="metric"><span>Durata</span><b>${a.duration||'—'}</b></div><div class="metric"><span>FC media</span><b>${a.hrAvg??'—'}</b></div><div class="metric"><span>Calorie</span><b>${a.calories??'—'}</b></div><div class="metric"><span>RPE</span><b>${a.rpe??'—'}</b></div></div><div class="formgrid"><div><label>Durata totale</label><input id="s-duration" placeholder="1:25:00" value="${a.duration??''}"></div><div><label>FC media</label><input id="s-hravg" type="number" value="${a.hrAvg??''}"></div><div><label>FC max</label><input id="s-hrmax" type="number" value="${a.hrMax??''}"></div><div><label>Calorie</label><input id="s-calories" type="number" value="${a.calories??''}"></div><div><label>RPE seduta 0–10</label><input id="s-rpe" type="number" min="0" max="10" value="${a.rpe??''}"></div><div><label>Gambe a fine seduta</label><select id="s-legs"><option></option>${['Fresche','Normali','Pesanti'].map(x=>`<option ${a.legs===x?'selected':''}>${x}</option>`).join('')}</select></div><div><label>Dolore ginocchio 0–10</label><input id="s-knee" type="number" min="0" max="10" value="${a.painKnee??''}"></div><div><label>Dolore quadricipite 0–10</label><input id="s-quad" type="number" min="0" max="10" value="${a.painQuad??''}"></div></div><div class="section-title" style="margin-top:18px">Carichi reali per serie</div><div class="strength-log">${rows}</div><label>Note / sensazioni</label><textarea id="s-notes">${a.notes??''}</textarea><button class="btn green" onclick="saveStrengthActual('${e.id}')">Salva palestra + analizza</button><div>${analysis(e)}</div></div>`;
+}
+function val(id){let el=document.getElementById(id),v=el?el.value:'';return v===''?null:Number(v)}
+function saveActual(id){let e=events.find(x=>x.id===id);e.actual={distance:val('d1'),duration:d2.value,pace:d3.value,hrAvg:val('d4'),hrMax:val('d5'),rpe:val('d6'),painQuad:val('d7'),painKnee:val('d8'),legs:d9.value,temp:val('d10'),elev:val('d11'),power:val('d12'),tss:val('d13'),if:val('d14'),notes:d15.value};e.status='completed';save();if(cloudUser)syncSingleEvent(id).catch(console.error);openWorkout(id)}
+function saveStrengthActual(id){let e=events.find(x=>x.id===id),strengthSets={};document.querySelectorAll('.s-bw').forEach(el=>{let ex=el.dataset.ex;if(!strengthSets[ex])strengthSets[ex]={bodyweight:false,sets:[]};strengthSets[ex].bodyweight=el.checked});document.querySelectorAll('.s-load').forEach(el=>{let ex=el.dataset.ex,i=Number(el.dataset.set);if(!strengthSets[ex])strengthSets[ex]={bodyweight:false,sets:[]};if(!strengthSets[ex].sets[i])strengthSets[ex].sets[i]={};strengthSets[ex].sets[i].load=el.value===''?null:Number(el.value)});document.querySelectorAll('.s-reps').forEach(el=>{let ex=el.dataset.ex,i=Number(el.dataset.set);if(!strengthSets[ex])strengthSets[ex]={bodyweight:false,sets:[]};if(!strengthSets[ex].sets[i])strengthSets[ex].sets[i]={};strengthSets[ex].sets[i].reps=el.value===''?null:Number(el.value)});e.actual={duration:document.getElementById('s-duration').value,hrAvg:val('s-hravg'),hrMax:val('s-hrmax'),calories:val('s-calories'),rpe:val('s-rpe'),legs:document.getElementById('s-legs').value,painKnee:val('s-knee'),painQuad:val('s-quad'),notes:document.getElementById('s-notes').value,strengthSets};e.status='completed';save();if(cloudUser)syncSingleEvent(id).catch(console.error);openWorkout(id)}
+function evaluate(e){if(!e.actual)return['','In attesa dei dati','Inserisci i dati reali.'];let a=e.actual,p=Math.max(a.painQuad||0,a.painKnee||0);if(p>=5)return['red','STOP / ASSESS','Dolore ≥5/10: non aumentare il carico e rivalutare.'];if(p>=3)return['amber','ADAPT','Dolore 3–4/10: ridurre volume/intensità della prossima corsa.'];let t='Dolore basso e risposta compatibile con il programma.';if(a.hrMax>215)t+=' FC max anomala: picco sospetto.';if(a.if>1.05&&a.rpe<=4)t+=' IF/TSS probabilmente non calibrati.';if(a.distance>(e.details.km||0)*1.2)t+=' Volume superiore al previsto: niente premio aumentando ancora il carico.';return['green','READY',t]}function analysis(e){let x=evaluate(e);return comparisonHTML(e)+coachFeedback(e)+`<div class="analysis ${x[0]}"><b>${x[1]}</b><div class="tiny">${x[2]}</div></div>`}
+function openWorkout(id){let e=events.find(x=>x.id===id),d=e.details;mPhase.textContent=e.phase+' • '+fmt(e.date);mTitle.textContent=icon(e.type)+' '+e.title;let metric1=e.type==='strength'?`<div class="metric"><span>Sessione</span><b>${e.title.includes('A')?'A':'B'}</b></div>`:`<div class="metric"><span>Km</span><b>${d.km}</b></div>`;let planned=`<div class="info"><h4>Programmato</h4><div class="metrics">${metric1}<div class="metric"><span>RPE</span><b>${d.rpe}</b></div><div class="metric"><span>Durata</span><b>${d.duration}</b></div></div><p><b>Ritmo:</b> ${d.pace}</p><p><b>Fueling:</b> ${d.fuel}</p><p><b>Note:</b> ${d.notes}</p><div class="movebox"><div><label>Sposta questa seduta</label><span class="datewrap"><input id="moveDate" type="date" value="${e.date}"></span></div><button class="btn" onclick="moveWorkout('${e.id}',document.getElementById('moveDate').value,false)">Sposta</button>${e.originalDate?`<button class="btn" onclick="restoreWorkout('${e.id}')">Ripristina</button>`:''}</div><div class="tiny mobile-note">Su smartphone usa “Sposta” con il selettore data. Su desktop puoi anche trascinare la tessera direttamente sul calendario.</div></div>`;modalBody.innerHTML=`<div class="two">${planned}${e.type==='rest'?'':form(e)}</div>${e.type==='strength'?strengthHTML(e):''}`;workoutModal.classList.add('open')}
+function moveWorkout(id,newDate,fromDrag){if(!newDate)return;let e=events.find(x=>x.id===id);if(!e)return;let conflicts=events.filter(x=>x.id!==id&&x.date===newDate&&x.type!=='rest');if(conflicts.length&&!fromDrag){if(!confirm('In questa data hai già: '+conflicts.map(x=>x.title).join(', ')+'. Vuoi comunque spostare la seduta qui?'))return}if(!e.originalDate)e.originalDate=e.date;e.date=newDate;save();if(document.getElementById('workoutModal').classList.contains('open'))openWorkout(id)}function restoreWorkout(id){let e=events.find(x=>x.id===id);if(!e||!e.originalDate)return;e.date=e.originalDate;delete e.originalDate;save();openWorkout(id)}
+function closeModal(id){document.getElementById(id).classList.remove('open')}
+function renderNext(){let f=events.filter(e=>parse(e.date)>=TODAY&&e.status!=='completed').sort((a,b)=>a.date.localeCompare(b.date)).slice(0,5);nextEvents.innerHTML=f.map(e=>`<div class="next" onclick="openWorkout('${e.id}')"><div>${icon(e.type)}</div><div><b>${e.title}</b><small>${fmt(e.date)} • ${e.summary}</small></div></div>`).join('')}function dashboard(){let c=events.filter(e=>e.status==='completed'&&e.actual).sort((a,b)=>b.date.localeCompare(a.date)),last=c[0];if(last){let p=Math.max(last.actual.painQuad||0,last.actual.painKnee||0),s=Math.max(20,Math.min(95,90-p*7-Math.max(0,(last.actual.rpe||0)-6)*5-(last.actual.legs==='Pesanti'?8:0)));painNow.textContent=p+'/10';readinessNum.textContent=Math.round(s);readinessRing.style.setProperty('--p',s);readinessStatus.textContent=s>=75?'● READY':s>=55?'● ADAPT':'● RECOVER';readinessText.textContent=`Ultima seduta: RPE ${last.actual.rpe??'—'}, dolore max ${p}/10, gambe ${(last.actual.legs||'—').toLowerCase()}.`;injuryState.textContent=p<=2?'Basso':p<=4?'Da monitorare':'Alto'}let mon=new Date(TODAY);mon.setDate(TODAY.getDate()-((TODAY.getDay()+6)%7));let sun=new Date(mon);sun.setDate(mon.getDate()+6);let km=events.filter(e=>parse(e.date)>=mon&&parse(e.date)<=sun).reduce((s,e)=>s+(e.actual?.distance??e.details.km??0),0);weekKm.textContent=km.toFixed(1)+' km';let p=events.filter(e=>parse(e.date)<=TODAY&&e.type!=='rest'&&parse(e.date)>=new Date('2026-08-10T12:00:00')),done=p.filter(e=>e.status==='completed').length,adh=p.length?Math.round(done/p.length*100):0;adherence.textContent=adh+'%';adherenceBar.style.width=adh+'%'}function storageStatus(){let el=document.getElementById('storageChip');if(!el)return;try{localStorage.setItem('padova2027_test','1');localStorage.removeItem('padova2027_test');el.textContent='● dati salvati sul dispositivo';el.classList.add('ok')}catch(e){el.textContent='⚠ salvataggio limitato';el.classList.remove('ok')}}function refresh(){renderCalendar();renderNext();dashboard();storageStatus()}
+function openAIHub(){aiModal.classList.add('open');generateCoachPacket()}function generateCoachPacket(){let c=events.filter(e=>e.status==='completed'&&e.actual).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,8),f=events.filter(e=>parse(e.date)>TODAY&&!['strength','rest'].includes(e.type)).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,8),payload={athlete:'Francesco',goal:'Padova 18/04/2027 • target di lavoro 3h30',latestCompleted:c.map(e=>({id:e.id,date:e.date,title:e.title,planned:e.details,actual:e.actual})),nextRunningSessions:f.map(e=>({id:e.id,date:e.date,title:e.title,details:e.details}))};coachPacket.value=`Agisci come il coach del progetto Padova 2027 già definito in questa conversazione. Segui DATA → DECISION → PLAN. Modifica le prossime sedute SOLO se i dati lo giustificano. Non cambiare la palestra senza richiesta. Rispondi con una breve analisi e poi un blocco JSON valido: {"updates":[{"id":"ID_ESISTENTE","details":{"km":8,"pace":"5'20–5'45/km","rpe":"2–3/10","notes":"..."},"coachNote":"motivazione"}]}\n\nDATI APP:\n${JSON.stringify(payload,null,2)}`};async function copyPacket(){coachPacket.select();try{await navigator.clipboard.writeText(coachPacket.value)}catch(e){document.execCommand('copy')}}function applyAIResponse(){let raw=aiResponse.value.trim(),m=raw.match(/```(?:json)?\s*([\s\S]*?)```/i);if(m)raw=m[1].trim();try{let o=JSON.parse(raw),n=0;(o.updates||[]).forEach(u=>{let e=events.find(x=>x.id===u.id);if(!e)return;if(u.details)e.details={...e.details,...u.details};if(u.coachNote)e.details.notes=(e.details.notes?e.details.notes+' • ':'')+'AI: '+u.coachNote;n++});save();if(cloudUser)pushAllWorkouts().catch(console.error);aiApplyMsg.textContent='✓ Applicate '+n+' modifiche.'}catch(e){aiApplyMsg.textContent='Errore JSON: '+e.message}}function exportData(){let b=new Blob([JSON.stringify({version:1,events},null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='padova-2027-backup.json';a.click()}document.querySelectorAll('.modal').forEach(m=>m.addEventListener('click',e=>{if(e.target===m && m.id!=='authModal')m.classList.remove('open')}));refresh();
+</script>
+<div class="update-toast" id="updateToast">
+  <b>Nuova versione disponibile</b>
+  <div class="tiny">Ricarica per usare l'ultima versione dell'app.</div>
+  <button class="btn green" style="margin-top:8px" onclick="location.reload()">Ricarica</button>
+</div>
+
+
+<script>
+let deferredInstallPrompt = null;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  const b = document.getElementById('installAppBtn');
+  if (b) b.textContent = '＋ Installa app';
+});
+
+window.addEventListener('appinstalled', () => {
+  deferredInstallPrompt = null;
+  const s = document.getElementById('pwaStatus');
+  if (s) s.textContent = '✓ App installata.';
+});
+
+function openInstallHelp(){
+  const m=document.getElementById('installModal');
+  if(m)m.classList.add('open');
+  const native=document.getElementById('nativeInstallBtn');
+  if(native) native.disabled=!deferredInstallPrompt;
+}
+
+async function triggerNativeInstall(){
+  if(!deferredInstallPrompt){
+    const s=document.getElementById('pwaStatus');
+    if(s)s.textContent='Il browser non espone l’installazione automatica: su iPhone usa Safari → Condividi → Aggiungi alla schermata Home.';
+    return;
+  }
+  deferredInstallPrompt.prompt();
+  await deferredInstallPrompt.userChoice;
+  deferredInstallPrompt=null;
+}
+
+async function requestPersistentStorage(){
+  const s=document.getElementById('pwaStatus');
+  if(navigator.storage && navigator.storage.persist){
+    try{
+      const ok=await navigator.storage.persist();
+      if(s)s.textContent=ok?'✓ Il browser ha concesso storage persistente.':'Il browser gestirà automaticamente la persistenza dei dati.';
+    }catch(e){ if(s)s.textContent='Persistenza gestita dal browser.'; }
+  } else if(s) s.textContent='Persistenza gestita dal browser.';
+}
+
+async function forceAppUpdate(){
+  const s=document.getElementById('pwaStatus');
+  if('serviceWorker' in navigator){
+    try{
+      const reg=await navigator.serviceWorker.getRegistration();
+      if(reg){ await reg.update(); if(s)s.textContent='✓ Controllo aggiornamenti completato.'; }
+      else if(s)s.textContent='Service worker non ancora attivo.';
+    }catch(e){ if(s)s.textContent='Controllo aggiornamenti non riuscito.'; }
+  }
+}
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', async () => {
+    try {
+      const reg = await navigator.serviceWorker.register('./service-worker.js');
+      if (reg.waiting) document.getElementById('updateToast')?.classList.add('show');
+      reg.addEventListener('updatefound', () => {
+        const nw = reg.installing;
+        if (!nw) return;
+        nw.addEventListener('statechange', () => {
+          if (nw.state === 'installed' && navigator.serviceWorker.controller) {
+            document.getElementById('updateToast')?.classList.add('show');
+          }
+        });
+      });
+    } catch (err) {
+      console.warn('Service worker:', err);
+    }
+  });
+}
+
+if (navigator.storage && navigator.storage.persisted) {
+  navigator.storage.persisted().then(ok => {
+    const chip=document.getElementById('storageChip');
+    if(chip && ok) chip.textContent='● dati persistenti sul dispositivo';
+  }).catch(()=>{});
+}
+</script>
+
+
+<script>
+const SUPABASE_URL = "https://xcdfjxrvnqpxdievdmcf.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_1-rqbtzWKxGW4iZM2j0DtA_gMitolc9";
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+});
+let cloudUser = null;
+let cloudBusy = false;
+let athleteProfile = null;
+
+function setCloudState(kind, text) {
+  const chip = document.getElementById('cloudChip');
+  if (!chip) return;
+  chip.textContent = text;
+  chip.classList.remove('sync-ok','sync-warn');
+  if (kind === 'ok') chip.classList.add('sync-ok');
+  if (kind === 'warn') chip.classList.add('sync-warn');
+}
+function openAccount() {
+  if (!cloudUser) {
+    document.getElementById('authModal').classList.add('open');
+    return;
+  }
+  document.getElementById('accountEmail').textContent = cloudUser.email || cloudUser.id;
+  renderProfilePreview();
+  document.getElementById('accountModal').classList.add('open');
+}
+async function cloudLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  const msg = document.getElementById('authMsg');
+  msg.textContent = 'Accesso in corso…';
+  const { data, error } = await sb.auth.signInWithPassword({ email, password });
+  if (error) { msg.textContent = 'Accesso non riuscito: ' + error.message; return; }
+  msg.textContent = '✓ Accesso effettuato.';
+  cloudUser = data.user;
+  document.getElementById('authModal').classList.remove('open');
+  await bootstrapCloud();
+}
+async function sendMagicLink() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const msg = document.getElementById('authMsg');
+  if (!email) { msg.textContent='Inserisci prima la tua email.'; return; }
+  msg.textContent='Invio link…';
+  const redirectTo = location.origin + location.pathname;
+  const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: redirectTo } });
+  msg.textContent = error ? ('Errore: '+error.message) : '✓ Link inviato. Apri l’email sul dispositivo che vuoi usare.';
+}
+async function setAccountPassword() {
+  const p1 = document.getElementById('newAccountPassword').value;
+  const p2 = document.getElementById('confirmAccountPassword').value;
+  const msg = document.getElementById('passwordMsg');
+  if (!cloudUser) { msg.textContent = 'Devi essere autenticato.'; return; }
+  if (!p1 || p1.length < 8) { msg.textContent = 'Usa una password di almeno 8 caratteri.'; return; }
+  if (p1 !== p2) { msg.textContent = 'Le due password non coincidono.'; return; }
+  msg.textContent = 'Salvataggio in corso…';
+  const { data, error } = await sb.auth.updateUser({ password: p1 });
+  if (error) { msg.textContent = 'Errore: ' + error.message; return; }
+  document.getElementById('newAccountPassword').value = '';
+  document.getElementById('confirmAccountPassword').value = '';
+  msg.textContent = '✓ Password aggiornata. Ora puoi usarla per accedere anche da iPhone.';
+}
+
+async function cloudLogout() {
+  await sb.auth.signOut();
+  cloudUser = null; athleteProfile = null;
+  setCloudState('warn','○ cloud disconnesso');
+  document.getElementById('accountModal').classList.remove('open');
+  document.getElementById('authModal').classList.add('open');
+}
+function workoutToRow(e) {
+  const d=e.details||{}, a=e.actual||{};
+  let durationSec=null;
+  if (a.duration) {
+    const parts=String(a.duration).split(':').map(Number);
+    if(parts.length===3) durationSec=parts[0]*3600+parts[1]*60+parts[2];
+    else if(parts.length===2) durationSec=parts[0]*60+parts[1];
+  }
+  return {
+    user_id: cloudUser.id,
+    client_event_id: e.id,
+    original_date: e.originalDate || e.date,
+    workout_date: e.date,
+    workout_type: e.type,
+    title: e.title,
+    status: e.status || 'planned',
+    planned_distance_km: d.km ?? null,
+    planned_duration_minutes: parseDurationMinutes(d.duration),
+    planned_pace_min_sec: d.pace || null,
+    planned_rpe: parseRpeMid(d.rpe),
+    fueling_plan: d.fuel || null,
+    goal: d.goal || null,
+    coach_notes: d.notes || null,
+    actual_distance_km: a.distance ?? null,
+    actual_duration_seconds: durationSec,
+    actual_avg_pace: a.pace || null,
+    actual_avg_hr: a.hrAvg ?? null,
+    actual_max_hr: a.hrMax ?? null,
+    actual_rpe: a.rpe ?? null,
+    elevation_gain_m: a.elev ?? null,
+    avg_power_w: a.power ?? null,
+    pain_quad: a.painQuad ?? null,
+    pain_knee: a.painKnee ?? null,
+    legs_feeling: a.legs || null,
+    temperature_c: a.temp ?? null,
+    athlete_notes: e.type==='strength' ? JSON.stringify({notes:a.notes||'',calories:a.calories??null,strengthSets:a.strengthSets||{}}) : (a.notes || null),
+    completed_at: e.status==='completed' ? new Date().toISOString() : null,
+    updated_at: new Date().toISOString()
+  };
+}
+function parseDurationMinutes(v) {
+  if(!v) return null;
+  const s=String(v);
+  let m=s.match(/(\d+)h\s*(\d+)?/i);
+  if(m) return Number(m[1])*60 + Number(m[2]||0);
+  m=s.match(/(\d+)\s*[′']/);
+  if(m) return Number(m[1]);
+  m=s.match(/~?(\d+)/);
+  return m ? Number(m[1]) : null;
+}
+function parseRpeMid(v) {
+  if(v===null||v===undefined||v==='—') return null;
+  const nums=String(v).match(/\d+(?:\.\d+)?/g);
+  if(!nums||!nums.length) return null;
+  const arr=nums.map(Number); return arr.reduce((a,b)=>a+b,0)/arr.length;
+}
+function cloudRowToEvent(row, existing) {
+  const e = existing ? structuredClone(existing) : {
+    id: row.client_event_id, date: row.workout_date, originalDate: row.original_date || row.workout_date,
+    type: row.workout_type, title: row.title || 'Allenamento', phase:'Cloud', status:row.status||'planned',
+    summary: row.title || row.workout_type, details:{}
+  };
+  e.date=row.workout_date;
+  e.originalDate=row.original_date || e.originalDate || row.workout_date;
+  e.type=row.workout_type || e.type;
+  e.title=row.title || e.title;
+  e.status=row.status || e.status;
+  e.details=e.details||{};
+  if(row.planned_distance_km!==null)e.details.km=Number(row.planned_distance_km);
+  if(row.planned_pace_min_sec)e.details.pace=row.planned_pace_min_sec;
+  if(row.planned_rpe!==null)e.details.rpe=String(row.planned_rpe);
+  if(row.fueling_plan)e.details.fuel=row.fueling_plan;
+  if(row.goal)e.details.goal=row.goal;
+  if(row.coach_notes)e.details.notes=row.coach_notes;
+  const hasActual = row.actual_distance_km!==null || row.actual_duration_seconds!==null || row.actual_avg_hr!==null || row.actual_rpe!==null || row.pain_knee!==null || row.pain_quad!==null || row.athlete_notes!==null;
+  if(hasActual){
+    e.actual=e.actual||{};
+    e.actual.distance=row.actual_distance_km!==null?Number(row.actual_distance_km):e.actual.distance;
+    e.actual.pace=row.actual_avg_pace||e.actual.pace;
+    e.actual.hrAvg=row.actual_avg_hr??e.actual.hrAvg;
+    e.actual.hrMax=row.actual_max_hr??e.actual.hrMax;
+    e.actual.rpe=row.actual_rpe!==null?Number(row.actual_rpe):e.actual.rpe;
+    e.actual.elev=row.elevation_gain_m!==null?Number(row.elevation_gain_m):e.actual.elev;
+    e.actual.power=row.avg_power_w!==null?Number(row.avg_power_w):e.actual.power;
+    e.actual.painQuad=row.pain_quad!==null?Number(row.pain_quad):e.actual.painQuad;
+    e.actual.painKnee=row.pain_knee!==null?Number(row.pain_knee):e.actual.painKnee;
+    e.actual.legs=row.legs_feeling||e.actual.legs;
+    e.actual.temp=row.temperature_c!==null?Number(row.temperature_c):e.actual.temp;
+    if(e.type==='strength' && row.athlete_notes){try{const sx=JSON.parse(row.athlete_notes);e.actual.notes=sx.notes||e.actual.notes;e.actual.calories=sx.calories??e.actual.calories;e.actual.strengthSets=sx.strengthSets||e.actual.strengthSets||{}}catch(_){e.actual.notes=row.athlete_notes||e.actual.notes}}else{e.actual.notes=row.athlete_notes||e.actual.notes}
+    if(row.actual_duration_seconds!==null){
+      const s=Number(row.actual_duration_seconds),h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sec=s%60;
+      e.actual.duration=(h?String(h)+':':'')+String(m).padStart(h?2:1,'0')+':'+String(sec).padStart(2,'0');
+    }
+  }
+  return e;
+}
+async function loadAthleteProfile() {
+  if(!cloudUser)return;
+  const { data, error }=await sb.from('athlete_profiles').select('*').eq('id',cloudUser.id).maybeSingle();
+  if(!error) athleteProfile=data;
+  document.getElementById('profileState').textContent=athleteProfile?'Caricato':'Mancante';
+  renderProfilePreview();
+}
+function renderProfilePreview() {
+  const el=document.getElementById('profilePreview'); if(!el)return;
+  if(!athleteProfile){el.textContent='Profilo non disponibile.';return;}
+  el.innerHTML=`<b>${athleteProfile.first_name||''}</b> • ${athleteProfile.height_cm||'—'} cm • ${athleteProfile.weight_kg||'—'} kg<br>
+  Maratona: ${athleteProfile.marathon_name||'—'} • ${athleteProfile.marathon_date||'—'}<br>
+  FC riposo: ${athleteProfile.resting_hr||'—'} bpm • VO₂max stimato: ${athleteProfile.vo2max_estimate||'—'}<br>
+  <span style="color:var(--muted)">${(athleteProfile.main_goal||'').slice(0,250)}</span>`;
+}
+async function pushAllWorkouts() {
+  if(!cloudUser)return;
+  const rows=events.map(workoutToRow);
+  const { error }=await sb.from('workouts').upsert(rows,{onConflict:'user_id,client_event_id'});
+  if(error) throw error;
+}
+async function pullAllWorkouts() {
+  if(!cloudUser)return;
+  const { data, error }=await sb.from('workouts').select('*').eq('user_id',cloudUser.id).order('workout_date');
+  if(error) throw error;
+  const byId=new Map(events.map(e=>[e.id,e]));
+  for(const row of data||[]){
+    if(!row.client_event_id)continue;
+    const merged=cloudRowToEvent(row,byId.get(row.client_event_id));
+    byId.set(row.client_event_id,merged);
+  }
+  events=Array.from(byId.values()).sort((a,b)=>a.date.localeCompare(b.date));
+  localStorage.setItem('padova2027_events_v1',JSON.stringify(events));
+}
+async function syncSingleEvent(id) {
+  if(!cloudUser)return;
+  const e=events.find(x=>x.id===id); if(!e)return;
+  const { error }=await sb.from('workouts').upsert(workoutToRow(e),{onConflict:'user_id,client_event_id'});
+  if(error) throw error;
+}
+async function bootstrapCloud() {
+  if(!cloudUser)return;
+  cloudBusy=true;setCloudState('warn','◌ sincronizzazione…');
+  try{
+    await loadAthleteProfile();
+    const { count, error }=await sb.from('workouts').select('*',{count:'exact',head:true}).eq('user_id',cloudUser.id);
+    if(error)throw error;
+    if((count||0)===0) await pushAllWorkouts();
+    else await pullAllWorkouts();
+    localStorage.setItem('padova2027_events_v1',JSON.stringify(events));
+    refresh();
+    setCloudState('ok','● cloud sincronizzato');
+    document.getElementById('cloudUserLine').textContent=cloudUser.email||'Account connesso';
+    document.getElementById('cloudSyncLine').textContent='Calendario sincronizzato tra i dispositivi.';
+    document.getElementById('lastSync').textContent=new Date().toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});
+  }catch(err){
+    console.error(err);setCloudState('warn','⚠ errore cloud');
+    document.getElementById('cloudSyncLine').textContent=err.message||'Errore sincronizzazione';
+  }finally{cloudBusy=false}
+}
+async function manualCloudSync() {
+  if(!cloudUser){document.getElementById('authModal').classList.add('open');return;}
+  if(cloudBusy)return;
+  cloudBusy=true;setCloudState('warn','◌ sincronizzazione…');
+  try{
+    await pushAllWorkouts();
+    await pullAllWorkouts();
+    await loadAthleteProfile();
+    refresh();
+    setCloudState('ok','● cloud sincronizzato');
+    document.getElementById('lastSync').textContent=new Date().toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});
+  }catch(err){console.error(err);setCloudState('warn','⚠ errore cloud');alert('Errore sincronizzazione: '+err.message)}
+  finally{cloudBusy=false}
+}
+const originalSaveFn = window.save;
+window.save = function(){
+  localStorage.setItem('padova2027_events_v1',JSON.stringify(events));
+  refresh();
+  if(cloudUser) setTimeout(()=>pushAllWorkouts().then(()=>setCloudState('ok','● cloud sincronizzato')).catch(()=>setCloudState('warn','⚠ sync da riprovare')),50);
+};
+sb.auth.onAuthStateChange((event,session)=>{
+  cloudUser=session?.user||null;
+  if(cloudUser){
+    document.getElementById('authModal')?.classList.remove('open');
+    setTimeout(()=>bootstrapCloud(),0);
+  } else {
+    setCloudState('warn','○ cloud disconnesso');
+  }
+});
+(async()=>{
+  const {data}=await sb.auth.getSession();
+  if(data.session){
+    cloudUser=data.session.user;
+    document.getElementById('authModal').classList.remove('open');
+    await bootstrapCloud();
+  } else {
+    document.getElementById('authModal').classList.add('open');
+  }
+})();
+</script>
+
+</body></html>
