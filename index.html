@@ -109,6 +109,17 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background-ima
   .gym-v41-editor-grid{grid-template-columns:1fr}
 }
 </style>
+
+<style>
+.gym-edit-modal{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.72);backdrop-filter:blur(8px);display:none;place-items:center;padding:18px}
+.gym-edit-modal.open{display:grid}
+.gym-edit-dialog{width:min(560px,100%);background:#0d1821;border:1px solid #334552;border-radius:20px;box-shadow:0 30px 100px rgba(0,0,0,.65);padding:18px}
+.gym-edit-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
+.gym-edit-head h3{margin:0}.gym-edit-close{border:0;background:transparent;color:var(--muted);font-size:26px;cursor:pointer}
+.gym-warm-grid{display:grid;grid-template-columns:.55fr .75fr .8fr;gap:7px;margin-top:10px}
+.gym-warm-grid input,.gym-warm-grid select{padding:9px}
+@media(max-width:700px){.gym-warm-grid{grid-template-columns:1fr 1fr}.gym-warm-grid .full{grid-column:1/-1}}
+</style>
 </head>
 <body><div class="app">
 <header class="top"><div class="brand"><div class="logo">🏃</div><div><h1>PADOVA 2027 • AI COACH</h1><small>Francesco • Marathon Project • 18 aprile 2027</small></div></div><div class="top-actions">
@@ -127,7 +138,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background-ima
 <div class="scoreline"><span>Profilo atleta</span><b id="profileState">—</b></div>
 <div class="scoreline"><span>Ultima sync</span><b id="lastSync">—</b></div>
 <button class="btn" style="width:100%;margin-top:10px" onclick="manualCloudSync()">Sincronizza adesso</button>
-</section><section class="card"><div class="section-title">Principio guida</div><div style="font-size:19px;font-weight:900">La continuità viene prima dell'eroismo.</div><p class="tiny">Nessun allenamento saltato viene “recuperato” aggiungendolo al giorno successivo.</p></section></aside></main><div class="footer">PADOVA 2027 • GYM PRO 4.1.1</div></div>
+</section><section class="card"><div class="section-title">Principio guida</div><div style="font-size:19px;font-weight:900">La continuità viene prima dell'eroismo.</div><p class="tiny">Nessun allenamento saltato viene “recuperato” aggiungendolo al giorno successivo.</p></section></aside></main><div class="footer">PADOVA 2027 • GYM PRO 4.2</div></div>
 <div class="modal" id="workoutModal"><div class="dialog"><div class="dialog-head"><div><div class="kicker" id="mPhase"></div><h3 id="mTitle"></h3></div><button class="close" onclick="closeModal('workoutModal')">×</button></div><div class="dialog-body" id="modalBody"></div></div></div>
 
 
@@ -316,6 +327,18 @@ function parseFirstNumber(v){
   let m=String(v||'').match(/\d+(?:[.,]\d+)?/);
   return m?Number(m[0].replace(',','.')):null
 }
+function parseSetsFromText(v){
+  let s=String(v||'');
+  let m=s.match(/(\d+)\s*[x×]/i);
+  return m?Number(m[1]):1
+}
+function parseVolumeFromText(v){
+  let s=String(v||'');
+  let m=s.match(/(\d+)\s*[x×]\s*(\d+(?:[.,]\d+)?)/i);
+  if(m)return Number(m[2].replace(',','.'));
+  let n=s.match(/(\d+(?:[.,]\d+)?)/);
+  return n?Number(n[1].replace(',','.')):null
+}
 function guessUnit(v){
   let s=String(v||'').toLowerCase();
   if(s.includes('min'))return'min';
@@ -326,8 +349,20 @@ function guessUnit(v){
 function defaultGymState(day){
   return {
     main:(STRENGTH[day]||[]).map(r=>({name:r[0],plan:r[1],recovery:r[2],notes:r[3],unit:'rep'})),
-    warmup:(STRENGTH.warmup||[]).map(r=>({name:r[0],value:parseFirstNumber(r[1]),unit:guessUnit(r[1]),notes:r[2]||''})),
-    cooldown:(STRENGTH.cooldown||[]).map(r=>({name:r[0],value:parseFirstNumber(r[1]),unit:guessUnit(r[1]),notes:''}))
+    warmup:(STRENGTH.warmup||[]).map(r=>({
+      name:r[0],
+      sets:parseSetsFromText(r[1]),
+      value:parseVolumeFromText(r[1]),
+      unit:guessUnit(r[1]),
+      notes:r[2]||''
+    })),
+    cooldown:(STRENGTH.cooldown||[]).map(r=>({
+      name:r[0],
+      sets:parseSetsFromText(r[1]),
+      value:parseVolumeFromText(r[1]),
+      unit:guessUnit(r[1]),
+      notes:''
+    }))
   }
 }
 function normalizeGymState(raw,day){
@@ -424,11 +459,12 @@ function simpleCards41(section){
       <div><div class="gym-v41-name">${t.name}</div><div class="gym-v41-meta">${t.notes||''}</div></div>
       <div class="gym-v41-buttons"><button class="btn" onclick="editGym41('${section}',${i})">✎ Cambia</button><button class="btn" onclick="removeGym41('${section}',${i})">−</button></div>
     </div>
-    <div class="gym-v41-simple" style="margin-top:9px">
-      <input class="simple-value" data-section="${section}" data-index="${i}" type="number" step=".5" value="${t.value??''}" placeholder="quantità">
-      <select class="simple-unit" data-section="${section}" data-index="${i}">${unitOptions(t.unit||'rep')}</select>
-      <button class="btn" onclick="if('${t.unit}'==='sec')setRestTimer(${t.value||60},'${jsName(t.name)}')">⏱ Timer</button>
+    <div class="gym-warm-grid">
+      <div><label>Serie</label><input class="simple-sets" data-section="${section}" data-index="${i}" type="number" min="1" step="1" value="${t.sets??1}"></div>
+      <div><label>Quantità</label><input class="simple-value" data-section="${section}" data-index="${i}" type="number" step=".5" value="${t.value??''}" placeholder="es. 5"></div>
+      <div class="full"><label>Unità</label><select class="simple-unit" data-section="${section}" data-index="${i}">${unitOptions(t.unit||'rep')}</select></div>
     </div>
+    <div class="gym-v41-prev" style="margin-top:8px">${t.sets??1} serie × ${t.value??'—'} ${t.unit==='rep'?'ripetizioni':t.unit==='sec'?'secondi':t.unit==='min'?'minuti':'metri'}</div>
   </div>`).join('')
 }
 function renderGym41(e,a){
@@ -455,11 +491,17 @@ function renderGym41(e,a){
     <div class="gym-v41-section"><div class="gym-v41-section-head"><h4>🏋️ Parte principale</h4><button class="btn" onclick="addGym41('main')">＋ Aggiungi esercizio</button></div>${mainCards41(a)}</div>
     <div class="gym-v41-section"><div class="gym-v41-section-head"><h4>🧘 Defaticamento</h4><button class="btn" onclick="addGym41('cooldown')">＋ Aggiungi</button></div>${simpleCards41('cooldown')}</div>
 
-    <div class="gym-v41-editor" id="gymEditBox41">
-      <div class="section-title">Modifica elemento</div>
-      <div class="gym-v41-editor-grid"><input id="editGymName41" placeholder="Nome esercizio"><input id="editGymPlan41" placeholder="es. 4×8"><input id="editGymRecovery41" placeholder="es. 90″"></div>
-      <label>Note</label><input id="editGymNotes41" placeholder="Indicazioni del coach">
-      <div class="gym-v41-actions"><button class="btn green" onclick="applyGym41()">Salva modifica</button><button class="btn" onclick="closeGym41()">Annulla</button></div>
+    <div class="gym-edit-modal" id="gymEditModal41">
+      <div class="gym-edit-dialog">
+        <div class="gym-edit-head"><div><div class="kicker">MODIFICA SCHEDA</div><h3>Cambia esercizio</h3></div><button class="gym-edit-close" onclick="closeGym41()">×</button></div>
+        <label>Nome esercizio</label><input id="editGymName41" placeholder="Es. Farmer Walk">
+        <div class="gym-v41-editor-grid" style="margin-top:8px">
+          <div><label>Schema</label><input id="editGymPlan41" placeholder="es. 4×40"></div>
+          <div><label>Recupero</label><input id="editGymRecovery41" placeholder="es. 90″"></div>
+          <div><label>Note</label><input id="editGymNotes41" placeholder="Indicazioni coach"></div>
+        </div>
+        <div class="gym-v41-actions"><button class="btn green" onclick="applyGym41()">Salva modifica</button><button class="btn" onclick="closeGym41()">Annulla</button></div>
+      </div>
     </div>
 
     <label>Note / sensazioni</label><textarea id="s-notes">${a.notes??''}</textarea>
@@ -473,7 +515,7 @@ function editGym41(section,index){
   document.getElementById('editGymPlan41').value=t.plan||'';
   document.getElementById('editGymRecovery41').value=t.recovery||'';
   document.getElementById('editGymNotes41').value=t.notes||'';
-  document.getElementById('gymEditBox41').classList.add('open')
+  document.getElementById('gymEditModal41').classList.add('open')
 }
 function addGym41(section){
   gymEditTarget={section,index:-1};
@@ -481,7 +523,7 @@ function addGym41(section){
   document.getElementById('editGymPlan41').value=section==='main'?'3×10':'';
   document.getElementById('editGymRecovery41').value=section==='main'?'90″':'';
   document.getElementById('editGymNotes41').value='';
-  document.getElementById('gymEditBox41').classList.add('open');
+  document.getElementById('gymEditModal41').classList.add('open');
   document.getElementById('editGymName41').focus()
 }
 function applyGym41(){
@@ -491,11 +533,11 @@ function applyGym41(){
   let old=index>=0?gymState[section][index]:null;
   let item=section==='main'
     ?{name,plan:document.getElementById('editGymPlan41').value||'3×10',recovery:document.getElementById('editGymRecovery41').value||'90″',notes:document.getElementById('editGymNotes41').value,unit:old?.unit||'rep'}
-    :{name,value:old?.value??null,unit:old?.unit||'rep',notes:document.getElementById('editGymNotes41').value};
+    :{name,sets:old?.sets??1,value:old?.value??null,unit:old?.unit||'rep',notes:document.getElementById('editGymNotes41').value};
   if(index<0)gymState[section].push(item);else gymState[section][index]=item;
   closeGym41();rerenderGym41()
 }
-function closeGym41(){gymEditTarget=null;document.getElementById('gymEditBox41')?.classList.remove('open')}
+function closeGym41(){gymEditTarget=null;document.getElementById('gymEditModal41')?.classList.remove('open')}
 function removeGym41(section,index){syncSimple41();gymState[section].splice(index,1);rerenderGym41()}
 function keepPrevious41(){syncSimple41();gymState=previousState(gymDay(events.find(x=>x.id===gymActiveId)));rerenderGym41()}
 function resetOriginal41(){gymState=defaultGymState(gymDay(events.find(x=>x.id===gymActiveId)));rerenderGym41()}
@@ -507,6 +549,7 @@ function changeUnit41(name,unit){
   document.querySelectorAll('.s-volume').forEach(x=>{if(x.dataset.ex===name)x.placeholder=unit==='rep'?'rip':unit})
 }
 function syncSimple41(){
+  document.querySelectorAll('.simple-sets').forEach(x=>{let s=x.dataset.section,i=+x.dataset.index;if(gymState?.[s]?.[i])gymState[s][i].sets=x.value===''?1:+x.value});
   document.querySelectorAll('.simple-value').forEach(x=>{let s=x.dataset.section,i=+x.dataset.index;if(gymState?.[s]?.[i])gymState[s][i].value=x.value===''?null:+x.value});
   document.querySelectorAll('.simple-unit').forEach(x=>{let s=x.dataset.section,i=+x.dataset.index;if(gymState?.[s]?.[i])gymState[s][i].unit=x.value})
 }
