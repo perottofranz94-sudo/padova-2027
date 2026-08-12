@@ -127,7 +127,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background-ima
 <div class="scoreline"><span>Profilo atleta</span><b id="profileState">—</b></div>
 <div class="scoreline"><span>Ultima sync</span><b id="lastSync">—</b></div>
 <button class="btn" style="width:100%;margin-top:10px" onclick="manualCloudSync()">Sincronizza adesso</button>
-</section><section class="card"><div class="section-title">Principio guida</div><div style="font-size:19px;font-weight:900">La continuità viene prima dell'eroismo.</div><p class="tiny">Nessun allenamento saltato viene “recuperato” aggiungendolo al giorno successivo.</p></section></aside></main><div class="footer">PADOVA 2027 • GYM PRO 4.1</div></div>
+</section><section class="card"><div class="section-title">Principio guida</div><div style="font-size:19px;font-weight:900">La continuità viene prima dell'eroismo.</div><p class="tiny">Nessun allenamento saltato viene “recuperato” aggiungendolo al giorno successivo.</p></section></aside></main><div class="footer">PADOVA 2027 • GYM PRO 4.1.1</div></div>
 <div class="modal" id="workoutModal"><div class="dialog"><div class="dialog-head"><div><div class="kicker" id="mPhase"></div><h3 id="mTitle"></h3></div><button class="close" onclick="closeModal('workoutModal')">×</button></div><div class="dialog-body" id="modalBody"></div></div></div>
 
 
@@ -251,6 +251,62 @@ function paceSecs(p){if(!p)return null;let m=String(p).match(/(\d+)[:'](\d+)/);r
 function comparisonHTML(e){if(!e.actual)return'';let a=e.actual,d=e.details||{},cards=[];let pk=d.km||0;if(a.distance!=null&&pk){let pct=(a.distance-pk)/pk*100,cls=Math.abs(pct)<=10?'good':Math.abs(pct)<=20?'warn':'bad';cards.push(`<div class="compare ${cls}"><span>Distanza</span><b>${a.distance.toFixed(2)} vs ${pk} km</b><small>${pct>=0?'+':''}${pct.toFixed(0)}%</small></div>`)}let pr=paceRange(d.pace),ap=paceSecs(a.pace);if(pr&&ap){let cls=ap>=pr[0]&&ap<=pr[1]?'good':(Math.min(Math.abs(ap-pr[0]),Math.abs(ap-pr[1]))<=10?'warn':'bad');let delta=ap<pr[0]?`Più veloce di ${pr[0]-ap}s/km`:ap>pr[1]?`Più lento di ${ap-pr[1]}s/km`:'Nel range';cards.push(`<div class="compare ${cls}"><span>Ritmo</span><b>${a.pace}/km</b><small>${delta}</small></div>`)}let rr=rpeRange(d.rpe);if(a.rpe!=null&&rr){let cls=a.rpe>=rr[0]&&a.rpe<=rr[1]?'good':Math.abs(a.rpe-(a.rpe<rr[0]?rr[0]:rr[1]))<=1?'warn':'bad';cards.push(`<div class="compare ${cls}"><span>RPE</span><b>${a.rpe} vs ${d.rpe}</b><small>${a.rpe<rr[0]?'Più facile':a.rpe>rr[1]?'Più duro':'Centrato'}</small></div>`)}if(a.hrAvg!=null)cards.push(`<div class="compare neutral"><span>FC media</span><b>${a.hrAvg} bpm</b><small>${a.hrMax>215?'Picco max sospetto':'dato registrato'}</small></div>`);return `<div class="compare-grid">${cards.join('')}</div>`}
 function coachFeedback(e){if(!e.actual)return'';let a=e.actual,d=e.details||{},pain=Math.max(a.painQuad||0,a.painKnee||0),parts=[];if(pain<=2)parts.push('dolore basso');else if(pain<=4)parts.push('dolore da monitorare');else parts.push('dolore alto');let pr=paceRange(d.pace),ap=paceSecs(a.pace);if(pr&&ap){if(ap<pr[0]-10)parts.push('ritmo molto più rapido del previsto');else if(ap<pr[0])parts.push('ritmo leggermente più rapido');else if(ap>pr[1]+10)parts.push('ritmo più lento del previsto');else parts.push('ritmo coerente col target')}if(a.rpe!=null)parts.push('RPE '+a.rpe+'/10');let verdict=pain>=5?'Seduta da non usare per aumentare il carico.':pain>=3?'Prossima corsa da adattare in base alla risposta a 24 ore.':'Risposta complessivamente positiva: manteniamo disciplina e non aumentiamo automaticamente la seduta successiva.';return `<div class="feedback-hero"><h4>Feedback del coach</h4><p>${parts.join(' • ')}.<br><b>${verdict}</b></p></div>`}
 
+
+
+function form(e){
+  if(e.type==='strength') return strengthForm(e);
+  let a=e.actual||{};
+  return `<div class="info"><h4>Dati reali corsa</h4>
+    <div class="formgrid">
+      <div><label>Km</label><input id="d1" type="number" step=".01" value="${a.distance??''}"></div>
+      <div><label>Durata</label><input id="d2" value="${a.duration??''}" placeholder="1:00:32"></div>
+      <div><label>Ritmo</label><input id="d3" value="${a.pace??''}" placeholder="5:07"></div>
+      <div><label>FC media</label><input id="d4" type="number" value="${a.hrAvg??''}"></div>
+      <div><label>FC max</label><input id="d5" type="number" value="${a.hrMax??''}"></div>
+      <div><label>RPE 0–10</label><input id="d6" type="number" min="0" max="10" value="${a.rpe??''}"></div>
+      <div><label>Dolore quad</label><input id="d7" type="number" min="0" max="10" value="${a.painQuad??''}"></div>
+      <div><label>Dolore ginocchio</label><input id="d8" type="number" min="0" max="10" value="${a.painKnee??''}"></div>
+      <div><label>Gambe</label><select id="d9"><option></option>${['Fresche','Normali','Pesanti'].map(x=>`<option ${a.legs===x?'selected':''}>${x}</option>`).join('')}</select></div>
+      <div><label>Temperatura °C</label><input id="d10" type="number" step=".1" value="${a.temp??''}"></div>
+      <div><label>D+ m</label><input id="d11" type="number" value="${a.elev??''}"></div>
+      <div><label>Potenza media W</label><input id="d12" type="number" value="${a.power??''}"></div>
+      <div><label>TSS</label><input id="d13" type="number" step=".1" value="${a.tss??''}"></div>
+      <div><label>IF</label><input id="d14" type="number" step=".01" value="${a.if??''}"></div>
+    </div>
+    <label>Note</label><textarea id="d15">${a.notes??''}</textarea>
+    <button class="btn green" onclick="saveActual('${e.id}')">Salva + analizza</button>
+    <div>${analysis(e)}</div>
+  </div>`
+}
+function val(id){
+  const el=document.getElementById(id);
+  if(!el||el.value==='') return null;
+  return Number(el.value)
+}
+function saveActual(id){
+  let e=events.find(x=>x.id===id); if(!e)return;
+  e.actual={
+    distance:val('d1'),
+    duration:document.getElementById('d2')?.value||'',
+    pace:document.getElementById('d3')?.value||'',
+    hrAvg:val('d4'),
+    hrMax:val('d5'),
+    rpe:val('d6'),
+    painQuad:val('d7'),
+    painKnee:val('d8'),
+    legs:document.getElementById('d9')?.value||'',
+    temp:val('d10'),
+    elev:val('d11'),
+    power:val('d12'),
+    tss:val('d13'),
+    if:val('d14'),
+    notes:document.getElementById('d15')?.value||''
+  };
+  e.status='completed';
+  save();
+  if(cloudUser)syncSingleEvent(id).catch(console.error);
+  openWorkout(id)
+}
 
 let gymState=null,gymPrevious=null,gymActiveId=null,gymEditTarget=null;
 
