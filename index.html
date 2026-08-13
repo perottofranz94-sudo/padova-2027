@@ -200,7 +200,10 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background-ima
 .unit-suffix{display:flex;align-items:center;gap:6px}.unit-suffix input{flex:1}.unit-suffix span{min-width:54px;color:var(--muted);font-weight:800;font-size:12px}
 @media(max-width:700px){.adaptive-grid{grid-template-columns:1fr 1fr}}
 </style>
-</head>
+<style>
+.event.dragging{opacity:.45;transform:scale(.98)}
+.day.dragover{outline:2px solid var(--cyan);outline-offset:-2px;background:rgba(67,213,255,.10)!important}
+</style></head>
 <body><div class="app">
 <header class="top"><div class="brand"><div class="logo">🏃</div><div><h1>PADOVA 2027 • AI COACH</h1><small>Francesco • Marathon Project • 18 aprile 2027</small></div></div><div class="top-actions">
 <button class="btn" id="installAppBtn" onclick="openInstallHelp()">＋ Installa app</button>
@@ -248,7 +251,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background-ima
   <div class="metric"><span>Palestra</span><b>2/sett.</b></div>
 </div>
 <button class="btn" style="width:100%;margin-top:10px" onclick="manualGenerateNextBlock()">Genera prossimo blocco ora</button>
-</section><section class="card"><div class="section-title">Principio guida</div><div style="font-size:19px;font-weight:900">La continuità viene prima dell'eroismo.</div><p class="tiny">Nessun allenamento saltato viene “recuperato” aggiungendolo al giorno successivo.</p></section></aside></main><div class="footer">PADOVA 2027 • AUTO PLAN 6.2.1 • ENV ADAPTIVE</div></div>
+</section><section class="card"><div class="section-title">Principio guida</div><div style="font-size:19px;font-weight:900">La continuità viene prima dell'eroismo.</div><p class="tiny">Nessun allenamento saltato viene “recuperato” aggiungendolo al giorno successivo.</p></section></aside></main><div class="footer">PADOVA 2027 • AUTO PLAN 6.2.2 • ENV ADAPTIVE</div></div>
 <div class="modal" id="workoutModal"><div class="dialog"><div class="dialog-head"><div><div class="kicker" id="mPhase"></div><h3 id="mTitle"></h3></div><button class="close" onclick="closeModal('workoutModal')">×</button></div><div class="dialog-body" id="modalBody"></div></div></div>
 
 
@@ -555,6 +558,48 @@ function manualGenerateNextBlock(){
   renderCalendar();
   alert(`Creato blocco di ${AUTO_BLOCK_WEEKS} settimane: ${made.length} nuove sedute di corsa.`)
 }
+
+let draggedEventId=null;
+
+function dragStart(ev,id){
+  draggedEventId=id;
+  try{
+    ev.dataTransfer.effectAllowed='move';
+    ev.dataTransfer.setData('text/plain',id);
+  }catch(_){}
+  if(ev.currentTarget)ev.currentTarget.classList.add('dragging');
+}
+function dragEnd(ev){
+  draggedEventId=null;
+  if(ev?.currentTarget)ev.currentTarget.classList.remove('dragging');
+  document.querySelectorAll('.day.dragover').forEach(x=>x.classList.remove('dragover'));
+}
+function dragEnterDay(ev){
+  ev.preventDefault();
+  ev.currentTarget?.classList.add('dragover');
+}
+function dragLeaveDay(ev){
+  if(ev.currentTarget&&!ev.currentTarget.contains(ev.relatedTarget))ev.currentTarget.classList.remove('dragover');
+}
+function dropEventOnDay(ev,newDate){
+  ev.preventDefault();
+  ev.stopPropagation();
+  ev.currentTarget?.classList.remove('dragover');
+  let id=draggedEventId;
+  try{id=ev.dataTransfer.getData('text/plain')||id}catch(_){}
+  if(!id)return;
+  const e=events.find(x=>x.id===id);
+  if(!e)return;
+  if(e.date===newDate){draggedEventId=null;return}
+  e.date=newDate;
+  e.metadata=e.metadata||{};
+  e.metadata.manuallyMoved=true;
+  e.metadata.manualMoveAt=new Date().toISOString();
+  draggedEventId=null;
+  save();
+  markCalendarDirty();
+  if(cloudUser)syncSingleEvent(id).catch(console.error);
+}
 function renderCalendar(){
   enforceAllRaceRules();
   const year=currentMonth.getFullYear(), month=currentMonth.getMonth();
@@ -567,10 +612,10 @@ function renderCalendar(){
     const d=new Date(start); d.setDate(start.getDate()+i);
     const ds=iso(d), inMonth=d.getMonth()===month, today=ds===iso(TODAY);
     const evs=events.filter(e=>e.date===ds);
-    out+=`<div class="day ${inMonth?'':'muted'} ${today?'today':''}" ondragover="event.preventDefault()" ondrop="dropEventOnDay(event,'${ds}')">
+    out+=`<div class="day ${inMonth?'':'muted'} ${today?'today':''}" ondragover="event.preventDefault()" ondragenter="dragEnterDay(event)" ondragleave="dragLeaveDay(event)" ondrop="dropEventOnDay(event,'${ds}')">
       <button class="day-add" title="Aggiungi sessione" onclick="event.stopPropagation();openAddSession('${ds}')">+</button>
       <div class="date-num">${d.getDate()}</div>
-      ${evs.map(e=>`<button class="event ${e.type} ${e.status==='completed'?'completed':''}" draggable="true" ondragstart="dragStart(event,'${e.id}')" onclick="event.stopPropagation();openWorkout('${e.id}')">${icon(e.type)} ${e.title}<span class="mini">${e.summary}</span></button>`).join('')}
+      ${evs.map(e=>`<button class="event ${e.type} ${e.status==='completed'?'completed':''}" draggable="true" ondragstart="dragStart(event,'${e.id}')" ondragend="dragEnd(event)" onclick="event.stopPropagation();openWorkout('${e.id}')">${icon(e.type)} ${e.title}<span class="mini">${e.summary}</span></button>`).join('')}
     </div>`;
   }
   document.getElementById('calendar').innerHTML=out;
