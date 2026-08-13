@@ -120,6 +120,16 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background-ima
 .gym-warm-grid input,.gym-warm-grid select{padding:9px}
 @media(max-width:700px){.gym-warm-grid{grid-template-columns:1fr 1fr}.gym-warm-grid .full{grid-column:1/-1}}
 </style>
+
+<style>
+.day-add{position:absolute;top:5px;right:5px;width:24px;height:24px;border-radius:8px;border:1px solid #2b4353;background:#10212c;color:#9fdcf0;font-weight:900;line-height:20px;z-index:4;opacity:.82}.day-add:hover{opacity:1;transform:scale(1.05)}
+.event.cycling,.event.roadbike{background:#245c75}.event.gravel{background:#6a5031}.event.mtb{background:#4c5b31}.event.swim{background:#175e75}.event.walk{background:#46505a}.event.hike{background:#435d47}.event.cross{background:#3c4b67}.event.race{background:linear-gradient(135deg,#8a3d2e,#a06e22);box-shadow:0 0 0 1px rgba(255,200,87,.28),0 7px 18px rgba(0,0,0,.25)}
+.add-session-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.sport-choice{padding:12px;border:1px solid var(--line);border-radius:13px;background:#0b1922;color:var(--txt);text-align:center;font-weight:850}.sport-choice.active{border-color:var(--cyan);background:#123043;box-shadow:0 0 0 1px rgba(67,213,255,.18)}
+.race-box{border:1px solid #674d25;background:#241b0f;border-radius:14px;padding:13px;margin-top:12px}.race-chip{display:inline-flex;padding:5px 8px;border-radius:999px;background:#3c2d16;color:#ffd98a;font-size:10px;font-weight:900;margin-right:6px}
+.coach-adapt{padding:12px;border-radius:14px;background:#142313;border:1px solid #31583a;margin-top:12px;color:#bff3cb}.coach-adapt b{display:block;margin-bottom:4px}
+.week-balance{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:10px}.balance-pill{padding:7px;border:1px solid var(--line);border-radius:10px;background:#0b1720;text-align:center;font-size:11px}.balance-pill b{display:block;font-size:15px}
+@media(max-width:760px){.add-session-grid{grid-template-columns:1fr 1fr}.week-balance{grid-template-columns:1fr 1fr 1fr}}
+</style>
 </head>
 <body><div class="app">
 <header class="top"><div class="brand"><div class="logo">🏃</div><div><h1>PADOVA 2027 • AI COACH</h1><small>Francesco • Marathon Project • 18 aprile 2027</small></div></div><div class="top-actions">
@@ -138,7 +148,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background-ima
 <div class="scoreline"><span>Profilo atleta</span><b id="profileState">—</b></div>
 <div class="scoreline"><span>Ultima sync</span><b id="lastSync">—</b></div>
 <button class="btn" style="width:100%;margin-top:10px" onclick="manualCloudSync()">Sincronizza adesso</button>
-</section><section class="card"><div class="section-title">Principio guida</div><div style="font-size:19px;font-weight:900">La continuità viene prima dell'eroismo.</div><p class="tiny">Nessun allenamento saltato viene “recuperato” aggiungendolo al giorno successivo.</p></section></aside></main><div class="footer">PADOVA 2027 • GYM PRO 4.2</div></div>
+</section><section class="card"><div class="section-title">Settimana tipo</div><div class="week-balance"><div class="balance-pill"><b>3</b>corse</div><div class="balance-pill"><b>2</b>palestra</div><div class="balance-pill"><b>+</b>cross</div><div class="balance-pill"><b>🏁</b>gare</div><div class="balance-pill"><b>AI</b>adatta</div></div><p class="tiny">Le attività extra non sostituiscono automaticamente le 3 corse + 2 palestra. Una gara di corsa invece conta come una delle 3 sedute e ricalibra la settimana.</p></section><section class="card"><div class="section-title">Principio guida</div><div style="font-size:19px;font-weight:900">La continuità viene prima dell'eroismo.</div><p class="tiny">Nessun allenamento saltato viene “recuperato” aggiungendolo al giorno successivo.</p></section></aside></main><div class="footer">PADOVA 2027 • MULTISPORT 5.0</div></div>
 <div class="modal" id="workoutModal"><div class="dialog"><div class="dialog-head"><div><div class="kicker" id="mPhase"></div><h3 id="mTitle"></h3></div><button class="close" onclick="closeModal('workoutModal')">×</button></div><div class="dialog-body" id="modalBody"></div></div></div>
 
 
@@ -189,6 +199,20 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background-ima
   </div>
 </div>
 
+
+<div class="modal" id="addSessionModal">
+  <div class="dialog" style="max-width:760px">
+    <div class="dialog-head"><div><div class="kicker">NUOVA SESSIONE</div><h3 id="addSessionTitle">Aggiungi allenamento</h3></div><button class="close" onclick="closeModal('addSessionModal')">×</button></div>
+    <div class="dialog-body">
+      <div class="section-title">Scegli attività</div>
+      <div class="add-session-grid" id="sportChoices"></div>
+      <div id="newSessionFields" style="margin-top:14px"></div>
+      <button class="btn primary" style="width:100%;margin-top:14px" onclick="saveNewSession()">Aggiungi al calendario</button>
+      <div id="addSessionMsg" class="tiny" style="margin-top:9px"></div>
+    </div>
+  </div>
+</div>
+
 <div class="modal" id="installModal">
   <div class="dialog">
     <div class="dialog-head">
@@ -233,8 +257,8 @@ const STRENGTH={warmup:[['Cardio leggero','5′','Facile'],['Good morning','3×1
 const DEFAULT_EVENTS=[];function add(id,date,type,title,phase,summary,km,pace,rpe,duration,notes,fuel='Acqua'){DEFAULT_EVENTS.push({id,date,type,title,phase,status:'planned',summary,details:{km,pace,rpe,duration,goal:summary,notes,fuel}})}
 add('2026-08-10-strength-a','2026-08-10','strength','Palestra A','Transizione','Forza • volume -20/30%',0,'—','5–6/10','70–80′','Niente cedimento; RIR 2–3.','Idratazione normale');add('2026-08-11-easy','2026-08-11','easy','Easy Run','Transizione','Previsto 7–8 km easy',8,"5'20–5'50/km",'2–3/10','42–47′','Stop se dolore quadricipite cresce.');DEFAULT_EVENTS.at(-1).status='completed';DEFAULT_EVENTS.at(-1).actual={distance:11.84,duration:'1:00:32',pace:'5:07',hrAvg:159,hrMax:237,rpe:3,painQuad:2,painKnee:1,legs:'Normali',temp:27,elev:72,power:260,tss:144,if:1.17,notes:'Fastidio quadricipite solo all’inizio, poi ok. FC max probabilmente artefatto.'};add('2026-08-12-strength-b','2026-08-12','strength','Palestra B','Transizione','Forza • volume -20/30%',0,'—','5–6/10','70–80′','No cedimento; se dolore >3/10 riduci ROM.');add('2026-08-13-easy-strides','2026-08-13','easy','Easy + Allunghi','Transizione','8–9 km + 4×20″',9,"Easy 5'20–5'50/km",'3–4/10','~50′','4×20″, recupero 60–90″. Niente sprint.');add('2026-08-14-rest','2026-08-14','rest','Riposo','Transizione','Riposo completo',0,'—','1/10','—','Giorno libero.','—');add('2026-08-16-long','2026-08-16','long','Lungo Easy','Transizione','14–16 km easy',15,"5'15–5'40/km",'3–4/10','~1h20','Se quadricipite presente: 10–12 km.','30–40 g carbo/h se >75′');
 [['2026-08-17','strength','Palestra A','Ponte','Forza • Giorno A',0,'—','6–8/10','~90′','RIR 1–2.'],['2026-08-18','easy','Easy Run','Ponte','8 km easy',8,"5'15–5'45/km",'2–3/10','~43′','Sensazione prima del ritmo.'],['2026-08-19','strength','Palestra B','Ponte','Forza • Giorno B',0,'—','6–8/10','~90′','RIR 1–2.'],['2026-08-20','quality','6×800','Ponte','Qualità leggera • 10 km totali',10,"800 m @ 4'15–4'20/km",'6/10','50–55′','2′ jogging; non all-out.'],['2026-08-21','rest','Riposo','Ponte','Riposo completo',0,'—','1/10','—','Non recuperare sedute perse.'],['2026-08-23','long','Lungo Easy','Ponte','16–18 km easy',17,"5'15–5'40/km",'3–4/10','~1h30','Scegli 16 km se stanchezza alta.'],['2026-08-24','strength','Palestra A','Ponte','Forza • Giorno A',0,'—','6–8/10','~90′','RIR 1–2.'],['2026-08-25','easy','Easy + Allunghi','Ponte','9 km + 4×20″',9,"5'15–5'40/km",'2–3/10','~48′','4×20″, recupero 60–90″.'],['2026-08-26','strength','Palestra B','Ponte','Forza • Giorno B',0,'—','6–8/10','~90′','RIR 1–2.'],['2026-08-27','quality','3×2 km','Ponte','Qualità • 11 km totali',11,"4'20–4'25/km",'6–7/10','~55′','3′ jogging; finire controllato.'],['2026-08-28','rest','Riposo','Ponte','Riposo completo',0,'—','1/10','—','Giorno libero.'],['2026-08-30','long','Lungo Easy','Ponte','18 km easy',18,"5'15–5'40/km",'3–4/10','~1h35','Controllato.'],['2026-08-31','strength','Palestra A','W1','Forza • Giorno A',0,'—','6–8/10','~90′','Se DOMS elevati, riduci accessori gambe.'],['2026-09-01','easy','Easy Run','W1','8 km easy',8,"5'15–5'45/km",'2–3/10','~43′','Non inseguire 5:00/km.'],['2026-09-02','strength','Palestra B','W1','Forza • Giorno B',0,'—','6–8/10','~90′','Qualità il giorno dopo: niente extra volume.'],['2026-09-03','quality','5×800','W1','Qualità • 10 km totali',10,"800 m @ 4'15–4'20/km",'6–7/10','~50′','2′ jogging.'],['2026-09-04','rest','Riposo','W1','Riposo completo',0,'—','1/10','—','Giorno libero.'],['2026-09-06','long','Lungo Easy','W1','16 km easy',16,"5'15–5'40/km",'3–4/10','~1h25','Nessuna progressione finale.'],['2026-09-07','strength','Palestra A','W2','Forza • Giorno A',0,'—','6–8/10','~90′','RIR 1–2.'],['2026-09-08','easy','Easy + Allunghi','W2','9 km + 4×20″',9,"5'15–5'40/km",'2–3/10','~48′','4×20″.'],['2026-09-09','strength','Palestra B','W2','Forza • Giorno B',0,'—','6–8/10','~90′','Non cercare DOMS.'],['2026-09-10','quality','3×2 km','W2','Qualità • 11 km totali',11,"4'20–4'25/km",'6–7/10','~55′','3′ jogging.'],['2026-09-11','rest','Riposo','W2','Riposo completo',0,'—','1/10','—','Giorno libero.'],['2026-09-13','long','Lungo Easy','W2','18 km easy',18,"5'15–5'40/km",'3–4/10','~1h35','Ultimi 3 km 5:05–5:15 solo se molto facile.'],['2026-09-14','strength','Palestra A','W3','Forza • Giorno A',0,'—','6–8/10','~90′','Picco corsa: non aggiungere volume.'],['2026-09-15','easy','Easy + Allunghi','W3','9 km + 4×20″',9,"5'15–5'40/km",'2–3/10','~48′','Controllato.'],['2026-09-16','strength','Palestra B','W3','Forza • Giorno B',0,'—','6–8/10','~90′','Lascia margine per la qualità.'],['2026-09-17','quality','6×1 km','W3','Qualità • 11 km totali',11,"1 km @ 4'15–4'20/km",'6–7/10','~55′','90″ jogging.'],['2026-09-18','rest','Riposo','W3','Riposo completo',0,'—','1/10','—','Giorno libero.'],['2026-09-20','long','Lungo Progressivo','W3','20 km • 16 easy + 4 controllati',20,"16 km 5'15–5'35; ultimi 4 km 5'00–5'10",'4–5/10','~1h45','Progressione solo se RPE ≤5 e nessun dolore.'],['2026-09-21','strength','Palestra A','W4 Scarico','Forza • scarico',0,'—','5–6/10','60–70′','Ridurre volume.'],['2026-09-22','easy','Easy Run','W4 Scarico','7–8 km easy',8,"5'20–5'50/km",'2–3/10','~43′','Scarico.'],['2026-09-23','strength','Palestra B','W4 Scarico','Forza • scarico',0,'—','5–6/10','60–70′','Ridurre volume.'],['2026-09-24','quality','3×1 km','W4 Scarico','Qualità leggera • 8–9 km',9,"4'20–4'25/km",'5–6/10','~45′','2′ jogging; niente gara.'],['2026-09-25','rest','Riposo','W4 Scarico','Riposo completo',0,'—','1/10','—','Giorno libero.'],['2026-09-27','long','Lungo Easy','W4 Scarico','15–16 km easy',16,"5'20–5'45/km",'3–4/10','~1h25','Scarico.']].forEach((x,i)=>add(x[0]+'-'+x[1],...x));
-let events=(()=>{try{return JSON.parse(localStorage.getItem('padova2027_events_v1'))||structuredClone(DEFAULT_EVENTS)}catch(e){return structuredClone(DEFAULT_EVENTS)}})();function save(){localStorage.setItem('padova2027_events_v1',JSON.stringify(events));refresh()};const pad=n=>String(n).padStart(2,'0'),iso=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()),parse=s=>{let[a,b,c]=s.split('-').map(Number);return new Date(a,b-1,c,12)},fmt=s=>parse(s).toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long',year:'numeric'}),icon=t=>({easy:'◌',quality:'⚡',long:'↗',strength:'◆',rest:'—'}[t]||'•');
-function renderCalendar(){let y=currentMonth.getFullYear(),m=currentMonth.getMonth(),first=new Date(y,m,1,12),off=(first.getDay()+6)%7,start=new Date(y,m,1-off,12),h='';document.getElementById('calTitle').textContent=currentMonth.toLocaleDateString('it-IT',{month:'long',year:'numeric'});for(let i=0;i<42;i++){let d=new Date(start);d.setDate(start.getDate()+i);let ds=iso(d),evs=events.filter(e=>e.date===ds);h+=`<div class="day ${d.getMonth()===m?'':'muted'} ${ds===iso(TODAY)?'today':''}" data-date="${ds}" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropEvent(event,'${ds}')"><div class="date-num">${d.getDate()}</div>${evs.map(e=>`<button class="event ${e.type} ${e.status==='completed'?'completed':''}" draggable="true" ondragstart="dragStart(event,'${e.id}')" onclick="openWorkout('${e.id}')">${icon(e.type)} ${e.title}<span class="mini">${e.summary}</span></button>`).join('')}</div>`}document.getElementById('calendar').innerHTML=h}
+let events=(()=>{try{return JSON.parse(localStorage.getItem('padova2027_events_v1'))||structuredClone(DEFAULT_EVENTS)}catch(e){return structuredClone(DEFAULT_EVENTS)}})();function save(){localStorage.setItem('padova2027_events_v1',JSON.stringify(events));refresh()};const pad=n=>String(n).padStart(2,'0'),iso=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()),parse=s=>{let[a,b,c]=s.split('-').map(Number);return new Date(a,b-1,c,12)},fmt=s=>parse(s).toLocaleDateString('it-IT',{weekday:'long',day:'numeric',month:'long',year:'numeric'}),icon=t=>({easy:'◌',quality:'⚡',long:'↗',strength:'◆',rest:'—',run:'🏃',race:'🏁',roadbike:'🚴',gravel:'🚲',mtb:'⛰️',swim:'🏊',walk:'🚶',hike:'🥾',cross:'⚙️'}[t]||'•');
+function renderCalendar(){let y=currentMonth.getFullYear(),m=currentMonth.getMonth(),first=new Date(y,m,1,12),off=(first.getDay()+6)%7,start=new Date(y,m,1-off,12),h='';document.getElementById('calTitle').textContent=currentMonth.toLocaleDateString('it-IT',{month:'long',year:'numeric'});for(let i=0;i<42;i++){let d=new Date(start);d.setDate(start.getDate()+i);let ds=iso(d),evs=events.filter(e=>e.date===ds);h+=`<div class="day ${d.getMonth()===m?'':'muted'} ${ds===iso(TODAY)?'today':''}" data-date="${ds}" ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropEvent(event,'${ds}')"><div class="date-num">${d.getDate()}</div><button class="day-add" onclick="event.stopPropagation();openAddSession('${ds}')" title="Aggiungi sessione">＋</button>${evs.map(e=>`<button class="event ${e.type} ${e.status==='completed'?'completed':''}" draggable="true" ondragstart="dragStart(event,'${e.id}')" onclick="openWorkout('${e.id}')">${icon(e.type)} ${e.title}<span class="mini">${e.summary}</span></button>`).join('')}</div>`}document.getElementById('calendar').innerHTML=h}
 let draggingId=null;function dragStart(ev,id){draggingId=id;ev.dataTransfer.effectAllowed='move';ev.dataTransfer.setData('text/plain',id)}function dragOver(ev){ev.preventDefault();ev.currentTarget.classList.add('dragover')}function dragLeave(ev){ev.currentTarget.classList.remove('dragover')}function dropEvent(ev,date){ev.preventDefault();ev.currentTarget.classList.remove('dragover');let id=ev.dataTransfer.getData('text/plain')||draggingId;if(id)moveWorkout(id,date,true)}
 function moveMonth(n){currentMonth=new Date(currentMonth.getFullYear(),currentMonth.getMonth()+n,1,12);renderCalendar()}function goToday(){currentMonth=new Date(TODAY.getFullYear(),TODAY.getMonth(),1,12);renderCalendar()}
 function recSeconds(txt){let n=parseInt(String(txt));return Number.isFinite(n)?n:60}
@@ -266,6 +290,7 @@ function coachFeedback(e){if(!e.actual)return'';let a=e.actual,d=e.details||{},p
 
 function form(e){
   if(e.type==='strength') return strengthForm(e);
+  if(!isRunType(e.type)) return sportForm(e);
   let a=e.actual||{};
   return `<div class="info"><h4>Dati reali corsa</h4>
     <div class="formgrid">
@@ -600,12 +625,89 @@ async function saveStrength41(id){
   openWorkout(id)
 }
 function evaluate(e){if(!e.actual)return['','In attesa dei dati','Inserisci i dati reali.'];let a=e.actual,p=Math.max(a.painQuad||0,a.painKnee||0);if(p>=5)return['red','STOP / ASSESS','Dolore ≥5/10: non aumentare il carico e rivalutare.'];if(p>=3)return['amber','ADAPT','Dolore 3–4/10: ridurre volume/intensità della prossima corsa.'];let t='Dolore basso e risposta compatibile con il programma.';if(a.hrMax>215)t+=' FC max anomala: picco sospetto.';if(a.if>1.05&&a.rpe<=4)t+=' IF/TSS probabilmente non calibrati.';if(a.distance>(e.details.km||0)*1.2)t+=' Volume superiore al previsto: niente premio aumentando ancora il carico.';return['green','READY',t]}function analysis(e){let x=evaluate(e);return comparisonHTML(e)+coachFeedback(e)+`<div class="analysis ${x[0]}"><b>${x[1]}</b><div class="tiny">${x[2]}</div></div>`}
+
+const SPORT_OPTIONS=[
+  ['run','🏃','Corsa'],['roadbike','🚴','Ciclismo strada'],['gravel','🚲','Gravel'],['mtb','⛰️','MTB'],['swim','🏊','Nuoto'],['walk','🚶','Camminata'],['hike','🥾','Trekking'],['cross','⚡','Altro / Cross training']
+];
+let addSessionDate=null,addSport='run';
+function isRunType(t){return ['easy','quality','long','run','race'].includes(t)}
+function openAddSession(date){
+  addSessionDate=date;addSport='run';
+  document.getElementById('addSessionTitle').textContent='Nuova sessione • '+fmt(date);
+  document.getElementById('sportChoices').innerHTML=SPORT_OPTIONS.map(s=>`<button class="sport-choice ${s[0]==='run'?'active':''}" onclick="chooseSport('${s[0]}',this)">${s[1]}<br>${s[2]}</button>`).join('');
+  renderNewSessionFields();document.getElementById('addSessionModal').classList.add('open')
+}
+function chooseSport(s,btn){addSport=s;document.querySelectorAll('.sport-choice').forEach(x=>x.classList.remove('active'));btn.classList.add('active');renderNewSessionFields()}
+function renderNewSessionFields(){
+  let box=document.getElementById('newSessionFields');
+  if(addSport==='run'){
+    box.innerHTML=`<div class="formgrid"><div><label>Tipo corsa</label><select id="nsRunType" onchange="toggleRaceFields()"><option value="easy">Easy</option><option value="quality">Qualità</option><option value="long">Lungo</option><option value="run">Corsa libera</option><option value="race">🏁 Gara</option></select></div><div><label>Titolo</label><input id="nsTitle" placeholder="es. Easy Run"></div><div><label>Km previsti</label><input id="nsKm" type="number" step=".1"></div></div><div id="raceFields"></div><label>Note</label><textarea id="nsNotes" placeholder="Indicazioni, percorso, obiettivo…"></textarea>`;
+    toggleRaceFields()
+  } else {
+    box.innerHTML=`<div class="formgrid"><div><label>Titolo</label><input id="nsTitle" placeholder="${SPORT_OPTIONS.find(x=>x[0]===addSport)?.[2]||'Allenamento'}"></div><div><label>Durata prevista (min)</label><input id="nsDuration" type="number"></div><div><label>Distanza prevista</label><input id="nsKm" type="number" step=".1"></div><div><label>RPE previsto</label><input id="nsRpe" type="number" min="1" max="10"></div></div><label>Note</label><textarea id="nsNotes" placeholder="Percorso, tecnica, obiettivo…"></textarea>`
+  }
+}
+function toggleRaceFields(){
+  let rt=document.getElementById('nsRunType')?.value,box=document.getElementById('raceFields');if(!box)return;
+  if(rt!=='race'){box.innerHTML='';return}
+  box.innerHTML=`<div class="race-box"><span class="race-chip">AUTO-ADAPT</span><b>Parametri gara</b><div class="formgrid" style="margin-top:9px"><div><label>Distanza</label><select id="raceDistance" onchange="raceDistancePreset()"><option value="5">5 km</option><option value="10">10 km</option><option value="15">15 km</option><option value="21.0975">Mezza maratona</option><option value="42.195">Maratona</option><option value="custom">Personalizzata</option></select></div><div><label>Priorità</label><select id="racePriority"><option value="C">C • allenamento/test</option><option value="B">B • importante</option><option value="A">A • obiettivo</option></select></div><div><label>Tempo obiettivo</label><input id="raceTarget" placeholder="es. 1:35:00"></div><div><label>Dislivello +</label><input id="raceElev" type="number" placeholder="m"></div><div><label>Km personalizzati</label><input id="raceCustomKm" type="number" step=".1" disabled></div></div><div class="tiny">La gara conterà come una delle 3 corse della settimana e il motore ricalibrerà qualità, lungo e recupero vicini alla gara.</div></div>`
+}
+function raceDistancePreset(){let s=document.getElementById('raceDistance'),c=document.getElementById('raceCustomKm');if(c)c.disabled=s.value!=='custom'}
+function uniqueEventId(prefix,date){return `${prefix}-${date}-${Date.now().toString(36)}`}
+function saveNewSession(){
+  if(!addSessionDate)return;let title=document.getElementById('nsTitle')?.value.trim(),notes=document.getElementById('nsNotes')?.value||'',km=Number(document.getElementById('nsKm')?.value||0)||null;
+  let e;
+  if(addSport==='run'){
+    let rt=document.getElementById('nsRunType').value;
+    if(rt==='race'){
+      let distSel=document.getElementById('raceDistance').value,dist=distSel==='custom'?Number(document.getElementById('raceCustomKm').value):Number(distSel),prio=document.getElementById('racePriority').value,target=document.getElementById('raceTarget').value,elev=Number(document.getElementById('raceElev').value||0);
+      if(!dist||dist<=0){addSessionMsg.textContent='Inserisci la distanza della gara.';return}
+      e={id:uniqueEventId('race',addSessionDate),date:addSessionDate,type:'race',title:title||`Gara ${raceLabel(dist)}`,phase:'Gara',status:'planned',summary:`${raceLabel(dist)} • priorità ${prio}`,details:{goal:`Gara ${raceLabel(dist)}`,rpe:'8–10/10',pace:target?`Target ${target}`:'Da definire',km:dist,duration:'Gara',fuel:dist>=15?'Strategia gara da testare':'Acqua secondo necessità',notes},metadata:{sport:'run',subtype:'race',race:{distance_km:dist,priority:prio,target_time:target,elevation_m:elev}}};
+      events.push(e);recalibrateAroundRace(e)
+    } else {
+      let defaults={easy:{title:'Easy Run',rpe:'2–3/10',pace:"5'15–5'45/km"},quality:{title:'Qualità',rpe:'6–7/10',pace:'Secondo seduta'},long:{title:'Lungo',rpe:'3–5/10',pace:"5'15–5'40/km"},run:{title:'Corsa libera',rpe:'3–5/10',pace:'A sensazione'}}[rt];
+      e={id:uniqueEventId(rt,addSessionDate),date:addSessionDate,type:rt,title:title||defaults.title,phase:'Manuale',status:'planned',summary:`${km?km+' km • ':''}${defaults.title}`,details:{goal:'Sessione aggiunta manualmente',rpe:defaults.rpe,pace:defaults.pace,km:km||0,duration:'—',fuel:'Secondo durata',notes},metadata:{sport:'run',subtype:rt}};events.push(e)
+    }
+  } else {
+    let dur=Number(document.getElementById('nsDuration')?.value||0)||null,rpe=Number(document.getElementById('nsRpe')?.value||0)||null,label=SPORT_OPTIONS.find(x=>x[0]===addSport)?.[2]||'Allenamento';
+    e={id:uniqueEventId(addSport,addSessionDate),date:addSessionDate,type:addSport,title:title||label,phase:'Cross training',status:'planned',summary:`${dur?dur+'′ • ':''}${label}`,details:{goal:'Cross training / attività aggiuntiva',rpe:rpe?`${rpe}/10`:'A sensazione',pace:'—',km:km||0,duration:dur?`${dur}′`:'—',fuel:'Secondo durata',notes},metadata:{sport:addSport,subtype:'training'}};events.push(e)
+  }
+  save();if(cloudUser)pushAllWorkouts().catch(console.error);document.getElementById('addSessionModal').classList.remove('open');openWorkout(e.id)
+}
+function raceLabel(km){if(Math.abs(km-21.0975)<.2)return'Mezza maratona';if(Math.abs(km-42.195)<.3)return'Maratona';return `${Number(km.toFixed(1))} km`}
+function dateDiff(a,b){return Math.round((parse(a)-parse(b))/86400000)}
+function recalibrateAroundRace(race){
+  let r=race.metadata.race,dist=r.distance_km,prio=r.priority,rd=race.date;
+  events.forEach(e=>{
+    if(e.id===race.id||!isRunType(e.type)||e.status==='completed')return;
+    let diff=dateDiff(e.date,rd);
+    if(diff>=-4&&diff<=-1){
+      if(e.type==='quality'){e.type='easy';e.title='Easy pre-gara';e.summary='Easy + 4×20″';e.details={...e.details,km:Math.min(Number(e.details.km||8),8),pace:"5'20–5'50/km",rpe:'2–3/10',notes:`Adattato automaticamente per ${race.title}: niente qualità ravvicinata.`}}
+      if(e.type==='long'&&dist>=15){e.details={...e.details,km:Math.min(Number(e.details.km||16),12),pace:"5'20–5'50/km",rpe:'2–3/10',notes:`Ridotto per gara ${raceLabel(dist)}.`}}
+    }
+    if(diff>=1&&diff<=3){e.type='easy';e.title='Recovery post-gara';e.summary='Recupero post-gara';e.details={...e.details,km:dist>=21?6:7,pace:'Molto facile / sensazioni',rpe:'1–3/10',notes:`Recupero dopo ${race.title}. Se dolore o DOMS importanti: riposo.`}}
+  });
+  normalizeRaceWeek(race);
+  race.details.notes=(race.details.notes?race.details.notes+' • ':'')+`Piano corsa ricalibrato automaticamente (${r.priority}, ${raceLabel(dist)}).`;
+}
+function normalizeRaceWeek(race){
+  let rd=parse(race.date),monday=new Date(rd);monday.setDate(rd.getDate()-((rd.getDay()+6)%7));let sunday=new Date(monday);sunday.setDate(monday.getDate()+6);
+  let runs=events.filter(e=>isRunType(e.type)&&parse(e.date)>=monday&&parse(e.date)<=sunday&&e.id!==race.id&&e.status!=='completed').sort((a,b)=>a.date.localeCompare(b.date));
+  // race counts as one of the 3 weekly run slots: keep at most two other planned runs.
+  if(runs.length>2){let keep=runs.filter(x=>x.type==='easy').slice(0,1);let candidates=runs.filter(x=>!keep.includes(x)).sort((a,b)=>Math.abs(dateDiff(a.date,race.date))-Math.abs(dateDiff(b.date,race.date)));let chosen=[...keep,...candidates].slice(0,2);runs.filter(x=>!chosen.includes(x)).forEach(x=>{x.status='skipped';x.summary='Sostituito dalla gara';x.details.notes=(x.details.notes||'')+' • Sostituito automaticamente: la gara conta come seduta di corsa.'})}
+}
+
+function sportForm(e){
+  let a=e.actual||{},isBike=['roadbike','gravel','mtb'].includes(e.type);
+  return `<div class="info"><h4>Dati reali • ${e.title}</h4><div class="formgrid"><div><label>Distanza</label><input id="sp-distance" type="number" step=".01" value="${a.distance??''}"></div><div><label>Durata</label><input id="sp-duration" value="${a.duration??''}" placeholder="1:30:00"></div><div><label>FC media</label><input id="sp-hravg" type="number" value="${a.hrAvg??''}"></div><div><label>FC max</label><input id="sp-hrmax" type="number" value="${a.hrMax??''}"></div><div><label>RPE</label><input id="sp-rpe" type="number" min="0" max="10" value="${a.rpe??''}"></div><div><label>Dislivello +</label><input id="sp-elev" type="number" value="${a.elev??''}"></div>${isBike?`<div><label>Potenza media W</label><input id="sp-power" type="number" value="${a.power??''}"></div>`:''}<div><label>Calorie</label><input id="sp-cal" type="number" value="${a.calories??''}"></div></div><label>Note / sensazioni</label><textarea id="sp-notes">${a.notes??''}</textarea><button class="btn green" onclick="saveSportActual('${e.id}')">Salva attività</button></div>`
+}
+function saveSportActual(id){let e=events.find(x=>x.id===id);if(!e)return;e.actual={distance:val('sp-distance'),duration:document.getElementById('sp-duration')?.value||'',hrAvg:val('sp-hravg'),hrMax:val('sp-hrmax'),rpe:val('sp-rpe'),elev:val('sp-elev'),power:val('sp-power'),calories:val('sp-cal'),notes:document.getElementById('sp-notes')?.value||''};e.status='completed';save();if(cloudUser)syncSingleEvent(id).catch(console.error);openWorkout(id)}
 function openWorkout(id){
   let e=events.find(x=>x.id===id),d=e.details;
   mPhase.textContent=e.phase+' • '+fmt(e.date);mTitle.textContent=icon(e.type)+' '+e.title;
-  let metric=e.type==='strength'?`<div class="metric"><span>Sessione</span><b>${gymDay(e)}</b></div>`:`<div class="metric"><span>Km</span><b>${d.km}</b></div>`;
+  let metric=e.type==='strength'?`<div class="metric"><span>Sessione</span><b>${gymDay(e)}</b></div>`:isRunType(e.type)?`<div class="metric"><span>Km</span><b>${d.km||'—'}</b></div>`:`<div class="metric"><span>Sport</span><b>${e.title}</b></div>`;
   let planned=`<div class="info"><h4>Programmato</h4><div class="metrics">${metric}<div class="metric"><span>RPE</span><b>${d.rpe}</b></div><div class="metric"><span>Durata</span><b>${d.duration}</b></div></div>
-    ${e.type==='strength'?'':`<p><b>Ritmo:</b> ${d.pace}</p><p><b>Fueling:</b> ${d.fuel}</p>`}
+    ${e.type==='strength'?'':isRunType(e.type)?`<p><b>Ritmo:</b> ${d.pace}</p><p><b>Fueling:</b> ${d.fuel}</p>`:`<p><b>Durata prevista:</b> ${d.duration}</p><p><b>Obiettivo:</b> ${d.goal}</p>`}
     <p><b>Note:</b> ${d.notes}</p>
     <div class="movebox"><div><label>Sposta questa seduta</label><span class="datewrap"><input id="moveDate" type="date" value="${e.date}"></span></div>
     <button class="btn" onclick="moveWorkout('${e.id}',document.getElementById('moveDate').value,false)">Sposta</button>${e.originalDate?`<button class="btn" onclick="restoreWorkout('${e.id}')">Ripristina</button>`:''}</div></div>`;
@@ -615,7 +717,35 @@ function openWorkout(id){
 }
 function moveWorkout(id,newDate,fromDrag){if(!newDate)return;let e=events.find(x=>x.id===id);if(!e)return;let conflicts=events.filter(x=>x.id!==id&&x.date===newDate&&x.type!=='rest');if(conflicts.length&&!fromDrag){if(!confirm('In questa data hai già: '+conflicts.map(x=>x.title).join(', ')+'. Vuoi comunque spostare la seduta qui?'))return}if(!e.originalDate)e.originalDate=e.date;e.date=newDate;save();if(document.getElementById('workoutModal').classList.contains('open'))openWorkout(id)}function restoreWorkout(id){let e=events.find(x=>x.id===id);if(!e||!e.originalDate)return;e.date=e.originalDate;delete e.originalDate;save();openWorkout(id)}
 function closeModal(id){document.getElementById(id).classList.remove('open')}
-function renderNext(){let f=events.filter(e=>parse(e.date)>=TODAY&&e.status!=='completed').sort((a,b)=>a.date.localeCompare(b.date)).slice(0,5);nextEvents.innerHTML=f.map(e=>`<div class="next" onclick="openWorkout('${e.id}')"><div>${icon(e.type)}</div><div><b>${e.title}</b><small>${fmt(e.date)} • ${e.summary}</small></div></div>`).join('')}function dashboard(){let c=events.filter(e=>e.status==='completed'&&e.actual).sort((a,b)=>b.date.localeCompare(a.date)),last=c[0];if(last){let p=Math.max(last.actual.painQuad||0,last.actual.painKnee||0),s=Math.max(20,Math.min(95,90-p*7-Math.max(0,(last.actual.rpe||0)-6)*5-(last.actual.legs==='Pesanti'?8:0)));painNow.textContent=p+'/10';readinessNum.textContent=Math.round(s);readinessRing.style.setProperty('--p',s);readinessStatus.textContent=s>=75?'● READY':s>=55?'● ADAPT':'● RECOVER';readinessText.textContent=`Ultima seduta: RPE ${last.actual.rpe??'—'}, dolore max ${p}/10, gambe ${(last.actual.legs||'—').toLowerCase()}.`;injuryState.textContent=p<=2?'Basso':p<=4?'Da monitorare':'Alto'}let mon=new Date(TODAY);mon.setDate(TODAY.getDate()-((TODAY.getDay()+6)%7));let sun=new Date(mon);sun.setDate(mon.getDate()+6);let km=events.filter(e=>parse(e.date)>=mon&&parse(e.date)<=sun).reduce((s,e)=>s+(e.actual?.distance??e.details.km??0),0);weekKm.textContent=km.toFixed(1)+' km';let p=events.filter(e=>parse(e.date)<=TODAY&&e.type!=='rest'&&parse(e.date)>=new Date('2026-08-10T12:00:00')),done=p.filter(e=>e.status==='completed').length,adh=p.length?Math.round(done/p.length*100):0;adherence.textContent=adh+'%';adherenceBar.style.width=adh+'%'}function storageStatus(){let el=document.getElementById('storageChip');if(!el)return;try{localStorage.setItem('padova2027_test','1');localStorage.removeItem('padova2027_test');el.textContent='● dati salvati sul dispositivo';el.classList.add('ok')}catch(e){el.textContent='⚠ salvataggio limitato';el.classList.remove('ok')}}function refresh(){renderCalendar();renderNext();dashboard();storageStatus()}
+function renderNext(){let f=events.filter(e=>parse(e.date)>=TODAY&&e.status!=='completed').sort((a,b)=>a.date.localeCompare(b.date)).slice(0,5);nextEvents.innerHTML=f.map(e=>`<div class="next" onclick="openWorkout('${e.id}')"><div>${icon(e.type)}</div><div><b>${e.title}</b><small>${fmt(e.date)} • ${e.summary}</small></div></div>`).join('')}function dashboard(){let c=events.filter(e=>e.status==='completed'&&e.actual).sort((a,b)=>b.date.localeCompare(a.date)),last=c[0];if(last){let p=Math.max(last.actual.painQuad||0,last.actual.painKnee||0),s=Math.max(20,Math.min(95,90-p*7-Math.max(0,(last.actual.rpe||0)-6)*5-(last.actual.legs==='Pesanti'?8:0)));painNow.textContent=p+'/10';readinessNum.textContent=Math.round(s);readinessRing.style.setProperty('--p',s);readinessStatus.textContent=s>=75?'● READY':s>=55?'● ADAPT':'● RECOVER';readinessText.textContent=`Ultima seduta: RPE ${last.actual.rpe??'—'}, dolore max ${p}/10, gambe ${(last.actual.legs||'—').toLowerCase()}.`;injuryState.textContent=p<=2?'Basso':p<=4?'Da monitorare':'Alto'}let mon=new Date(TODAY);mon.setDate(TODAY.getDate()-((TODAY.getDay()+6)%7));let sun=new Date(mon);sun.setDate(mon.getDate()+6);let km=events.filter(e=>parse(e.date)>=mon&&parse(e.date)<=sun).reduce((s,e)=>s+(e.actual?.distance??e.details.km??0),0);weekKm.textContent=km.toFixed(1)+' km';let p=events.filter(e=>parse(e.date)<=TODAY&&e.type!=='rest'&&parse(e.date)>=new Date('2026-08-10T12:00:00')),done=p.filter(e=>e.status==='completed').length,adh=p.length?Math.round(done/p.length*100):0;adherence.textContent=adh+'%';adherenceBar.style.width=adh+'%'}function storageStatus(){let el=document.getElementById('storageChip');if(!el)return;try{localStorage.setItem('padova2027_test','1');localStorage.removeItem('padova2027_test');el.textContent='● dati salvati sul dispositivo';el.classList.add('ok')}catch(e){el.textContent='⚠ salvataggio limitato';el.classList.remove('ok')}}
+function addEventIfMissing(e){if(!events.some(x=>x.id===e.id))events.push(e)}
+function mondayOf(d){let x=new Date(d);x.setHours(12,0,0,0);x.setDate(x.getDate()-((x.getDay()+6)%7));return x}
+function addDays(d,n){let x=new Date(d);x.setDate(x.getDate()+n);return x}
+function personalizedWeekSpec(weekStart){
+  let ds=iso(weekStart);
+  if(ds<'2026-11-02')return {easy:9,quality:10,long:20,qtitle:'Soglia controllata',qpace:"4'20–4'25/km",longnote:'Endurance facile'};
+  if(ds<'2027-01-04')return {easy:10,quality:11,long:22,qtitle:'Tempo / soglia',qpace:"4'20–4'30/km",longnote:'Endurance; ogni 3ª settimana scarico'};
+  if(ds<'2027-03-01')return {easy:10,quality:12,long:25,qtitle:'Marathon build',qpace:"4'35–4'55/km a blocchi",longnote:'Lungo progressivo; inserire blocchi a ritmo maratona se fresco'};
+  if(ds<'2027-04-05')return {easy:9,quality:12,long:28,qtitle:'Specifico maratona',qpace:"4'50–5'00/km nei blocchi specifici",longnote:'Specifico maratona, senza oltrepassare RPE 6'};
+  if(ds<'2027-04-12')return {easy:8,quality:8,long:16,qtitle:'Taper • richiamo',qpace:"4'55–5'00/km brevi blocchi",longnote:'Taper'};
+  return {easy:6,quality:6,long:0,qtitle:'Taper finale',qpace:'Facile + brevi allunghi',longnote:'Gara'}
+}
+function ensurePersonalizedRoadmap(){
+  let start=mondayOf(new Date('2026-09-28T12:00:00')),end=new Date('2027-04-18T12:00:00'),w=0;
+  for(let mon=new Date(start);mon<=end;mon=addDays(mon,7),w++){
+    let spec=personalizedWeekSpec(mon),deload=(w%4===3),easy=spec.easy,quality=spec.quality,long=deload?Math.max(16,spec.long-4):spec.long;
+    let tue=iso(addDays(mon,1)),wed=iso(addDays(mon,2)),thu=iso(addDays(mon,3)),sun=iso(addDays(mon,6)),monday=iso(mon);
+    if(tue<'2027-04-18')addEventIfMissing({id:`auto-easy-${tue}`,date:tue,type:'easy',title:'Easy Run',phase:'Padova 2027 • Auto',status:'planned',summary:`${easy} km easy`,details:{goal:'Sviluppo aerobico + recupero',rpe:'2–3/10',pace:"5'15–5'45/km",km:easy,duration:'—',fuel:'Acqua; carbo se >75′',notes:'Ritmo subordinato a RPE, caldo e recupero.'},metadata:{autoPlan:true}});
+    if(thu<'2027-04-18')addEventIfMissing({id:`auto-quality-${thu}`,date:thu,type:'quality',title:spec.qtitle,phase:'Padova 2027 • Auto',status:'planned',summary:`${quality} km totali`,details:{goal:spec.qtitle,rpe:'5–7/10',pace:spec.qpace,km:quality,duration:'—',fuel:'Acqua; gel se durata elevata',notes:deload?'Settimana di scarico: qualità ridotta e controllata.':'Seduta adattabile ai feedback del blocco precedente.'},metadata:{autoPlan:true}});
+    if(long>0&&sun<'2027-04-18')addEventIfMissing({id:`auto-long-${sun}`,date:sun,type:'long',title:deload?'Lungo Easy • scarico':'Lungo',phase:'Padova 2027 • Auto',status:'planned',summary:`${long} km`,details:{goal:'Endurance maratona',rpe:'3–5/10',pace:"5'10–5'40/km",km:long,duration:'—',fuel:long>=20?'40–60 g carbo/h + idratazione':'30–40 g carbo/h',notes:spec.longnote},metadata:{autoPlan:true}});
+    // After initial 5 loaded weeks, maintain two gym slots; content comes from A/B history and coach changes.
+    addEventIfMissing({id:`auto-strength-a-${monday}`,date:monday,type:'strength',title:'Palestra A',phase:'Forza • mantenimento',status:'planned',summary:'Palestra A • scheda salvata',details:{goal:'Forza e prevenzione per corsa',rpe:'6–8/10',pace:'—',km:0,duration:'~75–90′',fuel:'Post: proteine + carboidrati',notes:'Usa lo storico A; modifica esercizi solo quando cambia la scheda del coach.'},metadata:{autoPlan:true}});
+    addEventIfMissing({id:`auto-strength-b-${wed}`,date:wed,type:'strength',title:'Palestra B',phase:'Forza • mantenimento',status:'planned',summary:'Palestra B • scheda salvata',details:{goal:'Forza e prevenzione per corsa',rpe:'6–8/10',pace:'—',km:0,duration:'~75–90′',fuel:'Post: proteine + carboidrati',notes:'Usa lo storico B; modifica esercizi solo quando cambia la scheda del coach.'},metadata:{autoPlan:true}});
+  }
+  // Main race: Padova; avoid duplicate if user already adds it.
+  if(!events.some(e=>e.type==='race'&&e.date==='2027-04-18'))addEventIfMissing({id:'race-padova-2027',date:'2027-04-18',type:'race',title:'Maratona di Padova',phase:'A-Race',status:'planned',summary:'42,195 km • obiettivo 3h30',details:{goal:'Maratona obiettivo',rpe:'8–10/10',pace:"Target medio ~4'58/km, da confermare nel blocco specifico",km:42.195,duration:'3:30 target',fuel:'Strategia gara definita e testata nei lunghi',notes:'Obiettivo riuscita: sub 3h30. Target aspirazionale ~3h20 solo se i dati del blocco specifico lo giustificano.'},metadata:{sport:'run',subtype:'race',autoPlan:true,race:{distance_km:42.195,priority:'A',target_time:'3:30:00',elevation_m:0}}});
+}
+function refresh(){renderCalendar();renderNext();dashboard();storageStatus()}
 function openAIHub(){aiModal.classList.add('open');generateCoachPacket()}function generateCoachPacket(){let c=events.filter(e=>e.status==='completed'&&e.actual).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,8),f=events.filter(e=>parse(e.date)>TODAY&&!['strength','rest'].includes(e.type)).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,8),payload={athlete:'Francesco',goal:'Padova 18/04/2027 • target di lavoro 3h30',latestCompleted:c.map(e=>({id:e.id,date:e.date,title:e.title,planned:e.details,actual:e.actual})),nextRunningSessions:f.map(e=>({id:e.id,date:e.date,title:e.title,details:e.details}))};coachPacket.value=`Agisci come il coach del progetto Padova 2027 già definito in questa conversazione. Segui DATA → DECISION → PLAN. Modifica le prossime sedute SOLO se i dati lo giustificano. Non cambiare la palestra senza richiesta. Rispondi con una breve analisi e poi un blocco JSON valido: {"updates":[{"id":"ID_ESISTENTE","details":{"km":8,"pace":"5'20–5'45/km","rpe":"2–3/10","notes":"..."},"coachNote":"motivazione"}]}\n\nDATI APP:\n${JSON.stringify(payload,null,2)}`};async function copyPacket(){coachPacket.select();try{await navigator.clipboard.writeText(coachPacket.value)}catch(e){document.execCommand('copy')}}function applyAIResponse(){let raw=aiResponse.value.trim(),m=raw.match(/```(?:json)?\s*([\s\S]*?)```/i);if(m)raw=m[1].trim();try{let o=JSON.parse(raw),n=0;(o.updates||[]).forEach(u=>{let e=events.find(x=>x.id===u.id);if(!e)return;if(u.details)e.details={...e.details,...u.details};if(u.coachNote)e.details.notes=(e.details.notes?e.details.notes+' • ':'')+'AI: '+u.coachNote;n++});save();if(cloudUser)pushAllWorkouts().catch(console.error);aiApplyMsg.textContent='✓ Applicate '+n+' modifiche.'}catch(e){aiApplyMsg.textContent='Errore JSON: '+e.message}}function exportData(){let b=new Blob([JSON.stringify({version:1,events},null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='padova-2027-backup.json';a.click()}document.querySelectorAll('.modal').forEach(m=>m.addEventListener('click',e=>{if(e.target===m && m.id!=='authModal')m.classList.remove('open')}));refresh();
 </script>
 <div class="update-toast" id="updateToast">
@@ -793,6 +923,8 @@ function workoutToRow(e) {
     original_date: e.originalDate || e.date,
     workout_date: e.date,
     workout_type: e.type,
+    sport: e.metadata?.sport || (isRunType(e.type)?'run':e.type),
+    workout_metadata: e.metadata || {},
     title: e.title,
     status: e.status || 'planned',
     planned_distance_km: d.km ?? null,
@@ -844,6 +976,7 @@ function cloudRowToEvent(row, existing) {
   e.date=row.workout_date;
   e.originalDate=row.original_date || e.originalDate || row.workout_date;
   e.type=row.workout_type || e.type;
+  e.metadata=row.workout_metadata || e.metadata || (row.sport?{sport:row.sport}:{});
   e.title=row.title || e.title;
   e.status=row.status || e.status;
   e.details=e.details||{};
@@ -952,7 +1085,8 @@ async function manualCloudSync() {
 const originalSaveFn = window.save;
 window.save = function(){
   localStorage.setItem('padova2027_events_v1',JSON.stringify(events));
-  refresh();
+  ensurePersonalizedRoadmap();
+refresh();
   if(cloudUser) setTimeout(()=>pushAllWorkouts().then(()=>setCloudState('ok','● cloud sincronizzato')).catch(()=>setCloudState('warn','⚠ sync da riprovare')),50);
 };
 sb.auth.onAuthStateChange((event,session)=>{
