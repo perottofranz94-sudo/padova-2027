@@ -203,7 +203,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background-ima
   <div class="metric"><span>Palestra</span><b>2/sett.</b></div>
 </div>
 <button class="btn" style="width:100%;margin-top:10px" onclick="manualGenerateNextBlock()">Genera prossimo blocco ora</button>
-</section><section class="card"><div class="section-title">Principio guida</div><div style="font-size:19px;font-weight:900">La continuità viene prima dell'eroismo.</div><p class="tiny">Nessun allenamento saltato viene “recuperato” aggiungendolo al giorno successivo.</p></section></aside></main><div class="footer">PADOVA 2027 • AUTO PLAN 6.0.4.1.1</div></div>
+</section><section class="card"><div class="section-title">Principio guida</div><div style="font-size:19px;font-weight:900">La continuità viene prima dell'eroismo.</div><p class="tiny">Nessun allenamento saltato viene “recuperato” aggiungendolo al giorno successivo.</p></section></aside></main><div class="footer">PADOVA 2027 • AUTO PLAN 6.0.5.1.1</div></div>
 <div class="modal" id="workoutModal"><div class="dialog"><div class="dialog-head"><div><div class="kicker" id="mPhase"></div><h3 id="mTitle"></h3></div><button class="close" onclick="closeModal('workoutModal')">×</button></div><div class="dialog-body" id="modalBody"></div></div></div>
 
 
@@ -1043,16 +1043,10 @@ function recalibrateAroundRace(race){
       if(e.type==='quality'){raceAdapt(e,race,{title:'Richiamo pre-gara',summary:'Qualità breve e controllata',details:{km:Math.min(Number(e.details?.km||9),8),rpe:'5–6/10'}},'Richiamo breve nella settimana gara.');changed++}
     }
     if(diff>=-4&&diff<=-2&&(e.type==='quality'||e.type==='long')){
-      if(prio==='A' && diff>=-2){
-        deleteRunForRace(e);
-      }else{
-        raceAdapt(e,race,{type:'easy',title:'Easy pre-gara',summary:'Easy + 4×20″',details:{km:Math.min(Number(e.details?.km||7),7),pace:"5'25–5'55/km",rpe:'2–3/10',notes:'6–7 km easy + 4×20″ allunghi, recupero 40″ facile'}},'Seduta trasformata in attivazione pre-gara.');
-      }
-      changed++;
+      // La decisione specifica è già stata presa da enforceRaceRulesFor():
+      // qui non applichiamo cancellazioni automatiche aggiuntive.
     }
-    if(diff===-1&&prio==='A'){
-      raceAdapt(e,race,{type:'easy',title:'Shake-out pre-gara',summary:'4–5 km facili',details:{km:Math.min(Number(e.details?.km||5),5),pace:'Molto facile',rpe:'1–2/10'}},'Solo attivazione alla vigilia.');changed++;
-    }
+    
     if(diff>=1&&diff<=3){
       raceAdapt(e,race,{type:'easy',title:'Recovery post-gara',summary:'Recupero',details:{km:Math.min(Number(e.details?.km||7),dist>=21?6:7),pace:'Molto facile',rpe:'1–3/10'}},'Recupero post-gara.');changed++;
     }
@@ -1080,7 +1074,7 @@ function normalizeRaceWeek(race){
 function raceAdaptationHTML(e){
   if(e.type!=='race'||!e.metadata?.race)return'';
   let r=e.metadata.race;
-  return `<div class="analysis green"><b>🏁 Race Engine</b><div class="tiny" style="margin-top:5px">${r.plan_adjusted?`Piano ricalibrato: ${r.changed_sessions||0} sedute adattate nei 14 giorni intorno alla gara.`:'La gara verrà usata per adattare il piano.'} La gara conta come una delle 3 corse settimanali. Le sedute non più necessarie vengono rimosse dal calendario; quelle utili vengono riscritte con il nuovo lavoro. La palestra non viene modificata.</div></div>`
+  return `<div class="analysis green"><b>🏁 Race Engine</b><div class="tiny" style="margin-top:5px">${r.plan_adjusted?`Piano ricalibrato: ${r.changed_sessions||0} sedute adattate nei 14 giorni intorno alla gara.`:'La gara verrà usata per adattare il piano.'} La gara conta come una delle 3 corse settimanali. Le sedute vengono valutate per tipo e distanza dalla gara: gli easy possono restare o essere alleggeriti; qualità e lunghi vengono ridotti, trasformati o rimossi solo quando serve. La palestra non viene modificata.</div></div>`
 }
 
 function parseIntervalSpec(title,details){
@@ -1191,7 +1185,7 @@ function removeSession(id){
   }
 }
 
-const RACE_TOMBSTONES_KEY='padova2027_race_deleted_ids_v1';
+const RACE_TOMBSTONES_KEY='padova2027_race_deleted_ids_v2';
 
 function getRaceTombstones(){
   try{return new Set(JSON.parse(localStorage.getItem(RACE_TOMBSTONES_KEY)||'[]'))}
@@ -1218,26 +1212,116 @@ function deleteRunForRace(e){
 function enforceRaceRulesFor(race){
   if(!race?.metadata?.race)return;
   const prio=race.metadata.race.priority||'C';
-  const candidates=events
-    .filter(e=>e.id!==race.id&&isRunType(e.type)&&e.status!=='completed'&&parse(e.date)<parse(race.date))
-    .sort((a,b)=>b.date.localeCompare(a.date));
+  const dist=Number(race.metadata.race.distance_km||0);
 
-  // Regola chiara: per gare A/B, la corsa programmata immediatamente precedente
-  // viene eliminata se cade negli ultimi 3 giorni. Non deve restare nel calendario.
-  const previous=candidates[0];
-  if(previous){
-    const diff=dateDiff(previous.date,race.date);
-    if((prio==='A'||prio==='B') && diff>=-3 && diff<=-1){
-      deleteRunForRace(previous);
-    }
-  }
-
-  // Qualsiasi quality/long ancora presente nelle ultime 48h viene comunque eliminata.
   events.slice().forEach(e=>{
     if(e.id===race.id||e.status==='completed'||!isRunType(e.type))return;
-    const diff=dateDiff(e.date,race.date);
-    if(diff>=-2&&diff<=-1&&(e.type==='quality'||e.type==='long')){
-      deleteRunForRace(e);
+    const diff=dateDiff(e.date,race.date); // -1 = giorno prima
+
+    // EASY: in genere si mantiene. Si alleggerisce solo molto vicino alla gara.
+    if(e.type==='easy'){
+      if(diff===-1){
+        if(prio==='A' && dist>=21){
+          deleteRunForRace(e); // mezza/maratona A: riposo alla vigilia
+        }else{
+          raceAdapt(e,race,{
+            type:'easy',
+            title:'Shake-out pre-gara',
+            summary:'4–5 km molto facili + 4×20″',
+            details:{
+              km:Math.min(Number(e.details?.km||5),5),
+              pace:"5'30–6'00/km",
+              rpe:'1–2/10',
+              notes:'4–5 km molto facili + 4×20″ allunghi progressivi; 40″ jogging facile tra gli allunghi.'
+            }
+          },'Easy trasformato in shake-out alla vigilia.');
+        }
+      }else if(diff===-2){
+        raceAdapt(e,race,{
+          details:{
+            km:Math.min(Number(e.details?.km||7),7),
+            pace:"5'20–5'50/km",
+            rpe:'2/10',
+            notes:'Easy controllato; se sensazioni buone aggiungi 4×20″ allunghi con 40″ jogging facile.'
+          }
+        },'Easy mantenuto ma leggermente alleggerito a 48h dalla gara.');
+      }else if(diff===-3){
+        // Martedì easy prima di una gara nel weekend: lo teniamo.
+        if(prio==='A' && Number(e.details?.km||0)>9){
+          raceAdapt(e,race,{
+            details:{km:8,pace:"5'15–5'45/km",rpe:'2–3/10'}
+          },'Easy mantenuto; volume solo leggermente ridotto.');
+        }
+      }
+      return;
+    }
+
+    // QUALITY: qui il motore decide davvero.
+    if(e.type==='quality'){
+      if(diff===-1){
+        deleteRunForRace(e); // qualità alla vigilia: mai utile
+      }else if(diff===-2){
+        if(prio==='C' && dist<=10){
+          raceAdapt(e,race,{
+            title:'Richiamo breve pre-gara',
+            summary:'5–6 km easy + 4×20″',
+            details:{
+              km:6,pace:"5'25–5'50/km",rpe:'2–4/10',
+              notes:'5–6 km easy + 4×20″ allunghi progressivi; niente lavoro lattacido.'
+            }
+          },'Qualità sostituita da un richiamo molto breve.');
+        }else{
+          raceAdapt(e,race,{
+            type:'easy',
+            title:'Attivazione pre-gara',
+            summary:'5–6 km easy + 4×20″',
+            details:{
+              km:6,pace:"5'25–5'50/km",rpe:'2–3/10',
+              notes:'5–6 km easy + 4×20″ allunghi progressivi; 40″ jogging facile tra gli allunghi.'
+            }
+          },'Qualità rimossa e sostituita da attivazione pre-gara.');
+        }
+      }else if(diff===-3){
+        if(prio==='A'){
+          raceAdapt(e,race,{
+            title:'Richiamo pre-gara',
+            summary:'6–7 km con brevi richiami',
+            details:{
+              km:7,pace:"Easy + richiami a ritmo gara",rpe:'3–5/10',
+              notes:'2 km easy + 4×1′ a ritmo gara con 2′ easy + 1–2 km defaticamento.'
+            }
+          },'Qualità trasformata in richiamo specifico e non affaticante.');
+        }else{
+          raceAdapt(e,race,{
+            details:{
+              km:Math.min(Number(e.details?.km||8),8),
+              rpe:'5–6/10'
+            }
+          },'Qualità mantenuta ma abbreviata.');
+        }
+      }
+      return;
+    }
+
+    // LONG: non ha senso vicino alla gara. Lo trasformiamo o eliminiamo.
+    if(e.type==='long'){
+      if(diff===-1){
+        deleteRunForRace(e);
+      }else if(diff===-2){
+        if(prio==='A' || dist>=15){
+          deleteRunForRace(e);
+        }else{
+          raceAdapt(e,race,{
+            type:'easy',title:'Easy pre-gara',summary:'5–6 km facili',
+            details:{km:6,pace:"5'25–5'55/km",rpe:'2/10',notes:'Solo corsa facile, senza progressione.'}
+          },'Lungo sostituito da easy.');
+        }
+      }else if(diff===-3){
+        raceAdapt(e,race,{
+          type:'easy',title:'Easy pre-gara',summary:'6–7 km facili + allunghi',
+          details:{km:7,pace:"5'20–5'50/km",rpe:'2–3/10',notes:'6–7 km easy + 4×20″ allunghi facoltativi.'}
+        },'Lungo trasformato in easy per non accumulare fatica.');
+      }
     }
   })
 }
@@ -1247,30 +1331,14 @@ function enforceAllRaceRules(){
   races.forEach(enforceRaceRulesFor);
 }
 function dropRaceConflictingSessions(race){
-  const r=race.metadata?.race||{},prio=r.priority||'C',dist=Number(r.distance_km||0);
-
-  // Prima applichiamo la regola forte sulla corsa immediatamente precedente.
+  // Regola nuova: NON cancellare automaticamente la corsa precedente.
+  // Si valuta in base al tipo di seduta (easy / quality / long), distanza dalla gara e priorità.
   enforceRaceRulesFor(race);
 
+  // Sullo stesso giorno la gara sostituisce solamente eventuali altre corse pianificate.
   events.slice().forEach(e=>{
     if(e.id===race.id||e.status==='completed'||!isRunType(e.type))return;
-    const diff=dateDiff(e.date,race.date);
-
-    // Stesso giorno: una gara sostituisce qualunque corsa pianificata.
-    if(diff===0){
-      deleteRunForRace(e);
-      return;
-    }
-
-    // 3–4 giorni prima: non eliminiamo per forza, ma niente qualità pesante.
-    if(diff>=-4&&diff<=-3&&(e.type==='quality'||e.type==='long')&&prio!=='C'){
-      raceAdapt(e,race,{
-        type:'easy',
-        title:'Easy pre-gara',
-        summary:'6 km easy + 4×20″',
-        details:{km:6,pace:"5'25–5'55/km",rpe:'2/10',notes:'6 km easy + 4×20″ allunghi; 40″ jogging facile tra gli allunghi.'}
-      },'Seduta trasformata in attivazione pre-gara.');
-    }
+    if(dateDiff(e.date,race.date)===0)deleteRunForRace(e);
   });
 }
 function openWorkout(id){
