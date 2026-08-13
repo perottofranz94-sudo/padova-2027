@@ -163,6 +163,16 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background-ima
 .event.race .mini{color:#ffd7dc!important}
 .event.race:hover{border-color:#ff7b89!important;filter:brightness(1.06)}
 </style>
+
+<style>
+.year-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:8px}
+.year-chip{padding:6px 10px;border-radius:999px;background:#0f2230;border:1px solid #2c4555;color:#d7edf8;font-weight:850;font-size:12px}
+.new-year-btn{display:none}.new-year-btn.show{display:inline-flex}
+.block-banner{margin:12px 0;padding:13px 14px;border:1px solid #315469;border-radius:15px;background:linear-gradient(135deg,#0e2330,#101a24)}
+.block-banner b{display:block;margin-bottom:4px}.block-banner .tiny{line-height:1.45}
+.plan-engine-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:9px}
+@media(max-width:700px){.plan-engine-grid{grid-template-columns:1fr 1fr}}
+</style>
 </head>
 <body><div class="app">
 <header class="top"><div class="brand"><div class="logo">🏃</div><div><h1>PADOVA 2027 • AI COACH</h1><small>Francesco • Marathon Project • 18 aprile 2027</small></div></div><div class="top-actions">
@@ -174,14 +184,26 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background-ima
 <button class="btn primary" onclick="openAIHub()">✦ AI Coach Sync</button>
 </div></header>
 <section class="hero"><div class="card hero-main"><div class="kicker">MARATHON BUILD • BLOCK 1</div><h2>Train smart.<br>Arrive ready.</h2><div class="sub">Calendario operativo, confronto previsto/realizzato, diario, palestra completa e motore decisionale. I dati restano nel browser finché non li esporti.</div><div class="stats"><div class="stat"><b>3h30</b><span>Target Padova</span></div><div class="stat"><b>4'58″</b><span>Ritmo gara target</span></div><div class="stat"><b id="weekKm">—</b><span>Km settimana</span></div><div class="stat"><b id="painNow">1/10</b><span>Dolore ultimo dato</span></div></div></div><div class="card hero-side"><div class="section-title">Readiness Coach</div><div class="readiness"><div class="ring" id="readinessRing"><b id="readinessNum">82</b></div><div><span class="status" id="readinessStatus">● READY</span><h3>Carico gestibile</h3><div class="tiny" id="readinessText">Ultima seduta: RPE 3, dolore basso, gambe normali.</div></div></div><div class="notice">Indicatore operativo, non medico. Dolore crescente o alterazione della tecnica prevalgono sempre sul punteggio.</div></div></section>
-<main class="grid"><section class="card calendar-card"><div class="cal-head"><div><div class="section-title">Calendario allenamenti</div><div class="cal-title" id="calTitle"></div></div><div class="cal-nav"><button class="iconbtn" type="button" onclick="moveMonth(-1)">‹</button><button class="iconbtn" type="button" onclick="goToday()">●</button><button class="iconbtn" type="button" onclick="moveMonth(1)">›</button></div></div><div class="legend"><span class="pill">🔵 Easy</span><span class="pill">🟠 Qualità</span><span class="pill">🟢 Lungo</span><span class="pill">🟣 Palestra</span><span class="pill">bordo verde = completato</span></div><div class="weekdays"><div>Lun</div><div>Mar</div><div>Mer</div><div>Gio</div><div>Ven</div><div>Sab</div><div>Dom</div></div><div class="calendar" id="calendar"></div></section><aside class="side"><section class="card"><div class="section-title">Prossimi allenamenti</div><div id="nextEvents"></div></section><section class="card"><div class="section-title">Coach Engine</div><div class="scoreline"><span>Aderenza</span><b id="adherence">—</b></div><div class="bar"><i id="adherenceBar"></i></div><div class="scoreline"><span>Dolore/integrità</span><b id="injuryState">Basso</b></div><button class="btn primary" style="width:100%;margin-top:10px" onclick="openAIHub()">Apri AI Coach Sync</button></section><section class="card">
+<main class="grid"><section class="card calendar-card"><div class="cal-head"><div><div class="section-title">Calendario allenamenti</div><div class="cal-title" id="calTitle"></div>
+<div class="year-tools"><span class="year-chip" id="yearChip">2026</span><button class="btn new-year-btn" id="newYearBtn" type="button" onclick="createNextYear()">＋ Crea anno nuovo</button></div>
+</div><div class="cal-nav"><button class="iconbtn" type="button" onclick="moveMonth(-1)">‹</button><button class="iconbtn" type="button" onclick="goToday()">●</button><button class="iconbtn" type="button" onclick="moveMonth(1)">›</button></div></div><div class="legend"><span class="pill">🔵 Easy</span><span class="pill">🟠 Qualità</span><span class="pill">🟢 Lungo</span><span class="pill">🟣 Palestra</span><span class="pill">bordo verde = completato</span></div><div class="weekdays"><div>Lun</div><div>Mar</div><div>Mer</div><div>Gio</div><div>Ven</div><div>Sab</div><div>Dom</div></div><div class="calendar" id="calendar"></div></section><aside class="side"><section class="card"><div class="section-title">Prossimi allenamenti</div><div id="nextEvents"></div></section><section class="card"><div class="section-title">Coach Engine</div><div class="scoreline"><span>Aderenza</span><b id="adherence">—</b></div><div class="bar"><i id="adherenceBar"></i></div><div class="scoreline"><span>Dolore/integrità</span><b id="injuryState">Basso</b></div><button class="btn primary" style="width:100%;margin-top:10px" onclick="openAIHub()">Apri AI Coach Sync</button></section><section class="card">
 <div class="section-title">Cloud & atleta</div>
 <div id="cloudUserLine" style="font-weight:850">Non connesso</div>
 <div class="tiny" id="cloudSyncLine">Accedi per sincronizzare iPhone e Mac.</div>
 <div class="scoreline"><span>Profilo atleta</span><b id="profileState">—</b></div>
 <div class="scoreline"><span>Ultima sync</span><b id="lastSync">—</b></div>
 <button class="btn" style="width:100%;margin-top:10px" onclick="manualCloudSync()">Sincronizza adesso</button>
-</section><section class="card"><div class="section-title">Principio guida</div><div style="font-size:19px;font-weight:900">La continuità viene prima dell'eroismo.</div><p class="tiny">Nessun allenamento saltato viene “recuperato” aggiungendolo al giorno successivo.</p></section></aside></main><div class="footer">PADOVA 2027 • MULTISPORT 5.4.2.1</div></div>
+</section><section class="card">
+<div class="section-title">Auto Plan Engine</div>
+<div id="autoPlanStatus" class="tiny">Estensione automatica attiva.</div>
+<div class="plan-engine-grid">
+  <div class="metric"><span>Trigger</span><b>21 gg</b></div>
+  <div class="metric"><span>Blocco</span><b>6 sett.</b></div>
+  <div class="metric"><span>Corsa</span><b>3/sett.</b></div>
+  <div class="metric"><span>Palestra</span><b>2/sett.</b></div>
+</div>
+<button class="btn" style="width:100%;margin-top:10px" onclick="manualGenerateNextBlock()">Genera prossimo blocco ora</button>
+</section><section class="card"><div class="section-title">Principio guida</div><div style="font-size:19px;font-weight:900">La continuità viene prima dell'eroismo.</div><p class="tiny">Nessun allenamento saltato viene “recuperato” aggiungendolo al giorno successivo.</p></section></aside></main><div class="footer">PADOVA 2027 • AUTO PLAN 6.0.1</div></div>
 <div class="modal" id="workoutModal"><div class="dialog"><div class="dialog-head"><div><div class="kicker" id="mPhase"></div><h3 id="mTitle"></h3></div><button class="close" onclick="closeModal('workoutModal')">×</button></div><div class="dialog-body" id="modalBody"></div></div></div>
 
 
@@ -286,6 +308,206 @@ function goToday(){
   currentMonth = new Date(TODAY.getFullYear(), TODAY.getMonth(), 1, 12);
   renderCalendar();
 }
+
+const MARATHON_DATE='2027-04-18';
+const AUTO_BLOCK_WEEKS=6;
+const AUTO_TRIGGER_DAYS=21;
+
+function startOfWeekMonday(date){
+  const d=new Date(date);d.setHours(12,0,0,0);
+  d.setDate(d.getDate()-((d.getDay()+6)%7));
+  return d
+}
+function addDaysDate(date,n){const d=new Date(date);d.setDate(d.getDate()+n);return d}
+function latestRunDate(){
+  const runs=events.filter(e=>isRunType(e.type)&&e.status!=='skipped');
+  if(!runs.length)return null;
+  return runs.map(e=>e.date).sort().at(-1)
+}
+function completedRunKmLastWeeks(weeks=4){
+  const cutoff=addDaysDate(TODAY,-7*weeks);
+  const vals=events.filter(e=>isRunType(e.type)&&e.status==='completed'&&parse(e.date)>=cutoff)
+    .map(e=>Number(e.actual?.distance||e.details?.km||0)).filter(Boolean);
+  return vals.reduce((a,b)=>a+b,0)
+}
+function completedRunWeeksCount(weeks=4){
+  const cutoff=addDaysDate(TODAY,-7*weeks);
+  const dates=events.filter(e=>isRunType(e.type)&&e.status==='completed'&&parse(e.date)>=cutoff).map(e=>e.date);
+  return new Set(dates.map(x=>{
+    const d=startOfWeekMonday(parse(x));return iso(d)
+  })).size
+}
+function recentWeeklyRunKm(){
+  const weeks=completedRunWeeksCount(4);
+  const km=completedRunKmLastWeeks(4);
+  if(weeks>0)return Math.max(24,km/weeks);
+  // fallback on planned recent weeks
+  const cutoff=addDaysDate(TODAY,-28);
+  const p=events.filter(e=>isRunType(e.type)&&parse(e.date)>=cutoff&&parse(e.date)<=TODAY)
+    .reduce((s,e)=>s+Number(e.actual?.distance||e.details?.km||0),0);
+  return Math.max(30,p/4||36)
+}
+function phaseForDate(date){
+  const d=parse(date),race=parse(MARATHON_DATE),days=Math.round((race-d)/86400000);
+  if(days<=21)return'Taper';
+  if(days<=56)return'Specifico maratona';
+  if(days<=105)return'Marathon build';
+  if(days<=170)return'Endurance';
+  return'Costruzione aerobica'
+}
+function targetLongForPhase(phase,weekIndex,weeklyKm){
+  const bases={
+    'Costruzione aerobica':16,
+    'Endurance':18,
+    'Marathon build':22,
+    'Specifico maratona':26,
+    'Taper':14
+  };
+  let b=bases[phase]||18;
+  if(phase==='Taper')return Math.max(10,b-weekIndex*2);
+  return Math.min(Math.round(weeklyKm*.48), b+weekIndex*2)
+}
+function qualityTemplateForPhase(phase,weekIndex){
+  const rot=weekIndex%4;
+  if(phase==='Costruzione aerobica'){
+    return [
+      {title:'6x800',km:10,pace:'3:55–4:02/km',rpe:'7/10',notes:'2 km warm-up + 4×20″ allunghi; 6×800 m a 3:55–4:02/km, recupero 2:00 jog; 1,5–2 km cool-down.'},
+      {title:'Tempo 3x8 min',km:10,pace:'4:18–4:25/km',rpe:'6–7/10',notes:'2 km warm-up; 3×8 min a ritmo soglia controllato, recupero 2 min jog; 2 km cool-down.'},
+      {title:'5x1000',km:11,pace:'4:00–4:06/km',rpe:'7–8/10',notes:'2 km warm-up + 4×20″ allunghi; 5×1000 m a 4:00–4:06/km, recupero 2:15 jog; 2 km cool-down.'},
+      {title:'Fartlek controllato',km:9,pace:'Variato',rpe:'6/10',notes:'2 km warm-up; 8×2 min brillante / 2 min easy; 1,5 km cool-down.'}
+    ][rot]
+  }
+  if(phase==='Endurance'){
+    return [
+      {title:'4x1600',km:12,pace:'4:12–4:18/km',rpe:'7/10',notes:'2 km warm-up; 4×1600 m a 4:12–4:18/km, recupero 2:00 jog; 2 km cool-down.'},
+      {title:'Tempo continuo 25 min',km:11,pace:'4:20–4:27/km',rpe:'6–7/10',notes:'2 km warm-up; 25 min tempo controllato; 2 km cool-down.'},
+      {title:'6x1000',km:12,pace:'4:00–4:06/km',rpe:'7–8/10',notes:'2 km warm-up + allunghi; 6×1000 m, recupero 2:00–2:15 jog; 2 km cool-down.'},
+      {title:'Progressivo aerobico',km:12,pace:'5:15→4:30/km',rpe:'5–7/10',notes:'4 km easy + 4 km steady + 4 km progressivi fino a ~4:30/km.'}
+    ][rot]
+  }
+  if(phase==='Marathon build'){
+    return [
+      {title:'3x3000 ritmo maratona+',km:14,pace:'4:45–4:55/km',rpe:'6/10',notes:'2 km warm-up; 3×3000 m a 4:45–4:55/km, recupero 1 km easy; 1 km cool-down.'},
+      {title:'5x1600 soglia',km:13,pace:'4:15–4:20/km',rpe:'7/10',notes:'2 km warm-up; 5×1600 m a 4:15–4:20/km, recupero 2:00 jog; 2 km cool-down.'},
+      {title:'Blocco ritmo maratona',km:14,pace:'4:55–5:00/km',rpe:'5–6/10',notes:'3 km easy + 8 km a 4:55–5:00/km + 3 km easy.'},
+      {title:'8x800',km:12,pace:'3:58–4:04/km',rpe:'7–8/10',notes:'2 km warm-up; 8×800 m a 3:58–4:04/km, recupero 90″ jog; 2 km cool-down.'}
+    ][rot]
+  }
+  if(phase==='Specifico maratona'){
+    return [
+      {title:'2x5 km ritmo maratona',km:15,pace:'4:55–5:00/km',rpe:'6/10',notes:'2 km easy; 2×5 km a 4:55–5:00/km, recupero 1 km easy; 2 km cool-down.'},
+      {title:'10 km ritmo maratona',km:14,pace:'4:55–5:00/km',rpe:'6/10',notes:'2 km warm-up + 10 km a 4:55–5:00/km + 2 km cool-down.'},
+      {title:'4x2000 soglia controllata',km:13,pace:'4:18–4:24/km',rpe:'7/10',notes:'2 km warm-up; 4×2000 m a 4:18–4:24/km, recupero 2:00 jog; 2 km cool-down.'},
+      {title:'Progressivo specifico',km:15,pace:'5:20→4:55/km',rpe:'5–6/10',notes:'5 km easy + 5 km steady + 5 km a ritmo maratona.'}
+    ][rot]
+  }
+  return {title:'Richiamo pre-gara',km:8,pace:'5:20–5:45/km + allunghi',rpe:'3–5/10',notes:'6 km easy + 4×20″ allunghi, recupero 40″ facile; 1 km cool-down.'}
+}
+function chooseLongDay(weekStart){
+  // prefer Sunday; if a planned strength/manual conflict exists, Saturday
+  const sun=iso(addDaysDate(weekStart,6)),sat=iso(addDaysDate(weekStart,5));
+  const sunBusy=events.some(e=>e.date===sun&&e.type==='strength');
+  return sunBusy?sat:sun
+}
+function ensureStrengthForWeek(weekStart,phase='Forza'){
+  const monday=iso(weekStart),wed=iso(addDaysDate(weekStart,2));
+  const addStrength=(date,day)=>{
+    if(events.some(e=>e.date===date&&e.type==='strength'))return;
+    events.push({
+      id:`auto-strength-${day}-${date}`,date,originalDate:date,type:'strength',title:`Palestra ${day}`,phase,status:'planned',
+      summary:`Forza ${day}`,details:{km:'—',duration:'~90′',pace:'—',rpe:'6–7/10',fuel:'—',goal:'Forza e prevenzione',notes:'Mantieni la scheda A/B corrente; esercizi modificabili manualmente.'},
+      metadata:{autoGenerated:true,annualStrength:true}
+    })
+  };
+  addStrength(monday,'A');addStrength(wed,'B')
+}
+function generateRunBlock(startDate,weeks=AUTO_BLOCK_WEEKS,{force=false}={}){
+  const start=startOfWeekMonday(parse(startDate));
+  const baseline=recentWeeklyRunKm();
+  const created=[];
+  for(let w=0;w<weeks;w++){
+    const ws=addDaysDate(start,w*7),phase=phaseForDate(iso(ws));
+    const deload=(w===3);
+    let wkKm=baseline*(1+Math.min(w,2)*.055);
+    if(deload)wkKm*=.82;
+    if(phase==='Specifico maratona')wkKm*=1.05;
+    if(phase==='Taper')wkKm*=Math.max(.55,1-w*.12);
+    wkKm=Math.round(wkKm);
+
+    ensureStrengthForWeek(ws,phase);
+
+    const tue=iso(addDaysDate(ws,1)),thu=iso(addDaysDate(ws,3)),longDate=chooseLongDay(ws);
+    const longKm=Math.max(12,targetLongForPhase(phase,w,wkKm));
+    const q=qualityTemplateForPhase(phase,w);
+    const easyKm=Math.max(7,Math.round(wkKm-longKm-q.km));
+
+    const sessions=[
+      {date:tue,type:'easy',title:'Easy aerobico',summary:`${easyKm} km easy`,details:{km:easyKm,duration:'—',pace:"5'10–5'40/km",rpe:'2–3/10',fuel:'Acqua; gel solo se >75′',goal:'Base aerobica e recupero',notes:'2 km iniziali molto facili; parte centrale regolare; 0,5–1 km defaticamento.'}},
+      {date:thu,type:'quality',title:q.title,summary:q.title,details:{km:q.km,duration:'—',pace:q.pace,rpe:q.rpe,fuel:'Acqua; carbo se >75′',goal:'Qualità specifica della fase',notes:q.notes}},
+      {date:longDate,type:'long',title:'Lungo',summary:`${longKm} km`,details:{km:longKm,duration:'—',pace:phase==='Specifico maratona'?"5'05–5'25/km":"5'10–5'35/km",rpe:'3–5/10',fuel:'40–60 g carbo/h + liquidi',goal:'Endurance e robustezza',notes:deload?'Settimana di scarico: lungo volutamente ridotto.':'Partenza controllata; ultimi km solo se le sensazioni restano buone.'}}
+    ];
+
+    sessions.forEach(s=>{
+      if(events.some(e=>e.date===s.date&&isRunType(e.type)))return;
+      let e={id:`auto-${s.type}-${s.date}-${w}`,date:s.date,originalDate:s.date,type:s.type,title:s.title,phase,status:'planned',summary:s.summary,details:s.details,metadata:{autoGenerated:true,blockStart:iso(start),blockWeek:w+1}};
+      events.push(e);created.push(e)
+    })
+  }
+  save();
+  if(cloudUser)pushAllWorkouts().catch(console.error);
+  return created
+}
+function maybeAutoExtendPlan(){
+  const last=latestRunDate();if(!last)return;
+  const daysLeft=Math.round((parse(last)-TODAY)/86400000);
+  if(daysLeft>AUTO_TRIGGER_DAYS)return;
+  const nextStart=addDaysDate(startOfWeekMonday(parse(last)),7);
+  const already=events.some(e=>isRunType(e.type)&&e.metadata?.autoGenerated&&parse(e.date)>=nextStart);
+  if(already)return;
+  generateRunBlock(iso(nextStart),AUTO_BLOCK_WEEKS);
+}
+function ensureStrengthYear(year){
+  const start=new Date(year,0,1,12),end=new Date(year,11,31,12);
+  let ws=startOfWeekMonday(start);
+  while(ws<=end){
+    if(addDaysDate(ws,6)>=start)ensureStrengthForWeek(ws,'Forza annuale');
+    ws=addDaysDate(ws,7)
+  }
+  save();
+  if(cloudUser)pushAllWorkouts().catch(console.error)
+}
+function yearHasGeneratedContent(year){
+  return events.some(e=>parse(e.date).getFullYear()===year)
+}
+function createNextYear(){
+  const y=currentMonth.getFullYear()+1;
+  ensureStrengthYear(y);
+  // If running plan reaches the boundary or target marathon lies in the new year, build first block too.
+  const last=latestRunDate();
+  const jan1=`${y}-01-01`;
+  if(!last || parse(last)<parse(jan1))generateRunBlock(jan1,AUTO_BLOCK_WEEKS);
+  currentMonth=new Date(y,0,1,12);
+  renderCalendar();
+  alert(`Anno ${y} creato: palestra A/B settimanale + primo blocco corsa progressivo.`)
+}
+function updateYearTools(){
+  const y=currentMonth.getFullYear();
+  const chip=document.getElementById('yearChip');if(chip)chip.textContent=String(y);
+  const btn=document.getElementById('newYearBtn');
+  if(btn){
+    const show=currentMonth.getMonth()>=9; // Oct-Dec
+    btn.classList.toggle('show',show);
+    btn.textContent=`＋ Crea ${y+1}`;
+  }
+}
+
+function manualGenerateNextBlock(){
+  const last=latestRunDate();
+  const next=last?iso(addDaysDate(startOfWeekMonday(parse(last)),7)):iso(startOfWeekMonday(TODAY));
+  const made=generateRunBlock(next,AUTO_BLOCK_WEEKS,{force:true});
+  renderCalendar();
+  alert(`Creato blocco di ${AUTO_BLOCK_WEEKS} settimane: ${made.length} nuove sedute di corsa.`)
+}
 function renderCalendar(){
   const year=currentMonth.getFullYear(), month=currentMonth.getMonth();
   document.getElementById('calTitle').textContent=currentMonth.toLocaleDateString('it-IT',{month:'long',year:'numeric'}).replace(/^./,x=>x.toUpperCase());
@@ -304,6 +526,7 @@ function renderCalendar(){
     </div>`;
   }
   document.getElementById('calendar').innerHTML=out;
+  updateYearTools();
 }
 function strengthHTML(e){
   let prog=STRENGTH.progression.map(r=>`<tr>${r.map(x=>`<td>${x}</td>`).join('')}</tr>`).join('');
@@ -1419,4 +1642,15 @@ setTimeout(()=>{
   }catch(e){console.warn('cleanup race',e)}
 },250);
 </script>
+
+<script>
+setTimeout(()=>{
+  try{
+    ensureStrengthYear(TODAY.getFullYear());
+    maybeAutoExtendPlan();
+    renderCalendar();
+  }catch(e){console.warn('auto plan engine',e)}
+},700);
+</script>
+
 </body></html>
