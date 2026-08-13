@@ -189,6 +189,17 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background-ima
 .calendar-save-btn.saved{background:linear-gradient(135deg,#1e7e51,#2ca96d)!important;color:white!important}
 @media(max-width:650px){.calendar-savebar{flex-direction:column;align-items:stretch}.calendar-save-btn{width:100%}}
 </style>
+
+<style>
+.adaptive-card{border:1px solid #2d4e62;background:linear-gradient(145deg,#0c202b,#101823);border-radius:16px;padding:13px;margin-top:10px}
+.adaptive-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.adaptive-badge{padding:5px 9px;border-radius:999px;font-size:11px;font-weight:950;border:1px solid #36596e;background:#102b3a}
+.adaptive-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-top:9px}
+.adaptive-grid .metric{min-height:60px}
+.adaptive-reason{margin-top:8px;color:var(--muted);font-size:11px;line-height:1.5}
+.unit-suffix{display:flex;align-items:center;gap:6px}.unit-suffix input{flex:1}.unit-suffix span{min-width:54px;color:var(--muted);font-weight:800;font-size:12px}
+@media(max-width:700px){.adaptive-grid{grid-template-columns:1fr 1fr}}
+</style>
 </head>
 <body><div class="app">
 <header class="top"><div class="brand"><div class="logo">🏃</div><div><h1>PADOVA 2027 • AI COACH</h1><small>Francesco • Marathon Project • 18 aprile 2027</small></div></div><div class="top-actions">
@@ -207,7 +218,20 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background-ima
   <div><b>Calendario personale</b><div class="save-state" id="calendarSaveState">Le modifiche restano locali finché non premi SALVA.</div></div>
   <button class="btn calendar-save-btn" id="calendarSaveBtn" type="button" onclick="saveCalendarAuthoritative()">💾 SALVA CALENDARIO</button>
 </div>
-</section><aside class="side"><section class="card"><div class="section-title">Prossimi allenamenti</div><div id="nextEvents"></div></section><section class="card"><div class="section-title">Coach Engine</div><div class="scoreline"><span>Aderenza</span><b id="adherence">—</b></div><div class="bar"><i id="adherenceBar"></i></div><div class="scoreline"><span>Dolore/integrità</span><b id="injuryState">Basso</b></div><button class="btn primary" style="width:100%;margin-top:10px" onclick="openAIHub()">Apri AI Coach Sync</button></section><section class="card">
+</section><aside class="side"><section class="card"><div class="section-title">Prossimi allenamenti</div><div id="nextEvents"></div></section><section class="card"><div class="section-title">Adaptive Coach Engine</div>
+<div class="scoreline"><span>Aderenza</span><b id="adherence">—</b></div><div class="bar"><i id="adherenceBar"></i></div>
+<div class="scoreline"><span>Dolore/integrità</span><b id="injuryState">Basso</b></div>
+<div class="adaptive-card">
+  <div class="adaptive-head"><div><b>Decisione carico</b><div class="tiny" id="adaptiveSummary">Analisi in corso…</div></div><span class="adaptive-badge" id="adaptiveDecision">MAINTAIN</span></div>
+  <div class="adaptive-grid">
+    <div class="metric"><span>Punteggio</span><b id="adaptiveScore">—</b></div>
+    <div class="metric"><span>Volume 7 gg</span><b id="adaptiveKm7">—</b></div>
+    <div class="metric"><span>RPE medio</span><b id="adaptiveRpe">—</b></div>
+    <div class="metric"><span>Eff. corretta</span><b id="adaptiveEff">—</b></div>
+  </div>
+  <div class="adaptive-reason" id="adaptiveReason">Il motore usa volume, RPE, FC, temperatura, dislivello, dolore, gambe e aderenza.</div>
+</div>
+</section><section class="card">
 <div class="section-title">Cloud & atleta</div>
 <div id="cloudUserLine" style="font-weight:850">Non connesso</div>
 <div class="tiny" id="cloudSyncLine">Accedi per sincronizzare iPhone e Mac.</div>
@@ -224,7 +248,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background-ima
   <div class="metric"><span>Palestra</span><b>2/sett.</b></div>
 </div>
 <button class="btn" style="width:100%;margin-top:10px" onclick="manualGenerateNextBlock()">Genera prossimo blocco ora</button>
-</section><section class="card"><div class="section-title">Principio guida</div><div style="font-size:19px;font-weight:900">La continuità viene prima dell'eroismo.</div><p class="tiny">Nessun allenamento saltato viene “recuperato” aggiungendolo al giorno successivo.</p></section></aside></main><div class="footer">PADOVA 2027 • AUTO PLAN 6.1.1.1</div></div>
+</section><section class="card"><div class="section-title">Principio guida</div><div style="font-size:19px;font-weight:900">La continuità viene prima dell'eroismo.</div><p class="tiny">Nessun allenamento saltato viene “recuperato” aggiungendolo al giorno successivo.</p></section></aside></main><div class="footer">PADOVA 2027 • AUTO PLAN 6.2.1 • ENV ADAPTIVE</div></div>
 <div class="modal" id="workoutModal"><div class="dialog"><div class="dialog-head"><div><div class="kicker" id="mPhase"></div><h3 id="mTitle"></h3></div><button class="close" onclick="closeModal('workoutModal')">×</button></div><div class="dialog-body" id="modalBody"></div></div></div>
 
 
@@ -446,7 +470,7 @@ function ensureStrengthForWeek(weekStart,phase='Forza'){
 }
 function generateRunBlock(startDate,weeks=AUTO_BLOCK_WEEKS,{force=false}={}){
   const start=startOfWeekMonday(parse(startDate));
-  const baseline=recentWeeklyRunKm();
+  const baseline=recentWeeklyRunKm()*adaptiveMultiplier();
   const created=[];
   for(let w=0;w<weeks;w++){
     const ws=addDaysDate(start,w*7),phase=phaseForDate(iso(ws));
@@ -583,18 +607,18 @@ function form(e){
   let a=e.actual||{};
   return `<div class="info"><h4>Dati reali corsa</h4>
     <div class="formgrid">
-      <div><label>Km</label><input id="d1" type="number" step=".01" value="${a.distance??''}"></div>
+      <div><label>Distanza</label><div class="unit-suffix"><input id="d1" type="number" step=".01" value="${a.distance??''}"><span>km</span></div></div>
       <div><label>Durata</label><input id="d2" value="${a.duration??''}" placeholder="1:00:32"></div>
-      <div><label>Ritmo</label><input id="d3" value="${a.pace??''}" placeholder="5:07"></div>
-      <div><label>FC media</label><input id="d4" type="number" value="${a.hrAvg??''}"></div>
-      <div><label>FC max</label><input id="d5" type="number" value="${a.hrMax??''}"></div>
+      <div><label>Passo medio</label><div class="unit-suffix"><input id="d3" value="${a.pace??''}" placeholder="5:07"><span>min/km</span></div></div>
+      <div><label>FC media</label><div class="unit-suffix"><input id="d4" type="number" value="${a.hrAvg??''}"><span>bpm</span></div></div>
+      <div><label>FC max</label><div class="unit-suffix"><input id="d5" type="number" value="${a.hrMax??''}"><span>bpm</span></div></div>
       <div><label>RPE 0–10</label><input id="d6" type="number" min="0" max="10" value="${a.rpe??''}"></div>
       <div><label>Dolore quad</label><input id="d7" type="number" min="0" max="10" value="${a.painQuad??''}"></div>
       <div><label>Dolore ginocchio</label><input id="d8" type="number" min="0" max="10" value="${a.painKnee??''}"></div>
       <div><label>Gambe</label><select id="d9"><option></option>${['Fresche','Normali','Pesanti'].map(x=>`<option ${a.legs===x?'selected':''}>${x}</option>`).join('')}</select></div>
-      <div><label>Temperatura °C</label><input id="d10" type="number" step=".1" value="${a.temp??''}"></div>
-      <div><label>D+ m</label><input id="d11" type="number" value="${a.elev??''}"></div>
-      <div><label>Potenza media W</label><input id="d12" type="number" value="${a.power??''}"></div>
+      <div><label>Temperatura</label><div class="unit-suffix"><input id="d10" type="number" step=".1" value="${a.temp??''}"><span>°C</span></div></div>
+      <div><label>Dislivello positivo</label><div class="unit-suffix"><input id="d11" type="number" value="${a.elev??''}"><span>m</span></div></div>
+      <div><label>Potenza media</label><div class="unit-suffix"><input id="d12" type="number" value="${a.power??''}"><span>W</span></div></div>
       <div><label>TSS</label><input id="d13" type="number" step=".1" value="${a.tss??''}"></div>
       <div><label>IF</label><input id="d14" type="number" step=".01" value="${a.if??''}"></div>
     </div>
@@ -628,8 +652,9 @@ function saveActual(id){
     notes:document.getElementById('d15')?.value||''
   };
   e.status='completed';
+  adaptUpcomingRuns();
   save();
-  if(cloudUser)syncSingleEvent(id).catch(console.error);
+  if(cloudUser){syncSingleEvent(id).catch(console.error);setTimeout(()=>pushAllWorkouts().catch(console.error),100)}
   openWorkout(id)
 }
 
@@ -917,14 +942,14 @@ async function saveStrength41(id){
 function sportForm(e){
   let a=e.actual||{},bike=['roadbike','gravel','mtb'].includes(e.type);
   return `<div class="info"><h4>Dati reali • ${e.title}</h4><div class="formgrid">
-    <div><label>Distanza km</label><input id="sp-distance" type="number" step=".01" value="${a.distance??''}"></div>
+    <div><label>Distanza</label><div class="unit-suffix"><input id="sp-distance" type="number" step=".01" value="${a.distance??''}"><span>km</span></div></div>
     <div><label>Durata</label><input id="sp-duration" value="${a.duration??''}" placeholder="1:30:00"></div>
-    <div><label>Calorie</label><input id="sp-calories" type="number" value="${a.calories??''}"></div>
+    <div><label>Calorie</label><div class="unit-suffix"><input id="sp-calories" type="number" value="${a.calories??''}"><span>kcal</span></div></div>
     <div><label>RPE 0–10</label><input id="sp-rpe" type="number" min="0" max="10" value="${a.rpe??''}"></div>
-    <div><label>FC media</label><input id="sp-hravg" type="number" value="${a.hrAvg??''}"></div>
-    <div><label>FC max</label><input id="sp-hrmax" type="number" value="${a.hrMax??''}"></div>
-    <div><label>Dislivello + m</label><input id="sp-elev" type="number" value="${a.elev??''}"></div>
-    ${bike?`<div><label>Potenza media W</label><input id="sp-power" type="number" value="${a.power??''}"></div><div><label>Cadenza rpm</label><input id="sp-cadence" type="number" value="${a.cadence??''}"></div>`:''}
+    <div><label>FC media</label><div class="unit-suffix"><input id="sp-hravg" type="number" value="${a.hrAvg??''}"><span>bpm</span></div></div>
+    <div><label>FC max</label><div class="unit-suffix"><input id="sp-hrmax" type="number" value="${a.hrMax??''}"><span>bpm</span></div></div>
+    <div><label>Dislivello positivo</label><div class="unit-suffix"><input id="sp-elev" type="number" value="${a.elev??''}"><span>m</span></div></div>
+    ${bike?`<div><label>Potenza media</label><div class="unit-suffix"><input id="sp-power" type="number" value="${a.power??''}"><span>W</span></div></div><div><label>Cadenza</label><div class="unit-suffix"><input id="sp-cadence" type="number" value="${a.cadence??''}"><span>rpm</span></div></div>`:''}
   </div><label>Note / sensazioni</label><textarea id="sp-notes">${a.notes??''}</textarea>
   <button class="btn green" onclick="saveSportActual('${e.id}')">Salva attività + cloud</button></div>`
 }
@@ -1188,7 +1213,7 @@ function runPlanHTML(e){
       <div class="run-step-head"><div class="run-step-title">${s.name}</div><div class="run-step-meta">${s.notes||''}</div></div>
       <div class="run-step-grid">
         <div class="metric"><span>Distanza / durata</span><b>${s.dist}</b></div>
-        <div class="metric"><span>Ritmo</span><b>${s.pace}</b></div>
+        <div class="metric"><span>Passo</span><b>${s.pace}</b></div>
         <div class="metric"><span>RPE</span><b>${s.rpe}</b></div>
         <div class="metric"><span>Recupero / note</span><b>${s.notes||'—'}</b></div>
       </div>
@@ -1383,7 +1408,205 @@ function openWorkout(id){
 }
 function moveWorkout(id,newDate,fromDrag){if(!newDate)return;let e=events.find(x=>x.id===id);if(!e)return;let conflicts=events.filter(x=>x.id!==id&&x.date===newDate&&x.type!=='rest');if(conflicts.length&&!fromDrag){if(!confirm('In questa data hai già: '+conflicts.map(x=>x.title).join(', ')+'. Vuoi comunque spostare la seduta qui?'))return}if(!e.originalDate)e.originalDate=e.date;e.date=newDate;save();if(document.getElementById('workoutModal').classList.contains('open'))openWorkout(id)}function restoreWorkout(id){let e=events.find(x=>x.id===id);if(!e||!e.originalDate)return;e.date=e.originalDate;delete e.originalDate;save();openWorkout(id)}
 function closeModal(id){document.getElementById(id).classList.remove('open')}
-function renderNext(){let f=events.filter(e=>parse(e.date)>=TODAY&&e.status!=='completed').sort((a,b)=>a.date.localeCompare(b.date)).slice(0,5);nextEvents.innerHTML=f.map(e=>`<div class="next" onclick="openWorkout('${e.id}')"><div>${icon(e.type)}</div><div><b>${e.title}</b><small>${fmt(e.date)} • ${e.summary}</small></div></div>`).join('')}function dashboard(){
+function renderNext(){let f=events.filter(e=>parse(e.date)>=TODAY&&e.status!=='completed').sort((a,b)=>a.date.localeCompare(b.date)).slice(0,5);nextEvents.innerHTML=f.map(e=>`<div class="next" onclick="openWorkout('${e.id}')"><div>${icon(e.type)}</div><div><b>${e.title}</b><small>${fmt(e.date)} • ${e.summary}</small></div></div>`).join('')}
+function paceSecPerKm(p){
+  if(!p)return null;
+  let m=String(p).match(/(\d+)\s*[:'′]\s*(\d{2})/);
+  return m?(+m[1]*60 + +m[2]):null
+}
+function adaptiveRunMetrics(){
+  const runs=events.filter(e=>isRunType(e.type)&&e.status==='completed'&&e.actual).sort((a,b)=>a.date.localeCompare(b.date));
+  const cutoff7=addDaysDate(TODAY,-7),cutoff28=addDaysDate(TODAY,-28),cutoff56=addDaysDate(TODAY,-56);
+  const r7=runs.filter(e=>parse(e.date)>=cutoff7);
+  const r28=runs.filter(e=>parse(e.date)>=cutoff28);
+  const prev28=runs.filter(e=>parse(e.date)>=cutoff56&&parse(e.date)<cutoff28);
+
+  const sumKm=arr=>arr.reduce((s,e)=>s+(safeNumeric(e.actual?.distance)??safeNumeric(e.details?.km)??0),0);
+  const avg=arr=>{
+    const v=arr.filter(x=>Number.isFinite(x));
+    return v.length?v.reduce((a,b)=>a+b,0)/v.length:null
+  };
+  const km7=sumKm(r7),km28=sumKm(r28);
+  const weeklyBase=km28/4 || recentWeeklyRunKm();
+
+  const rpe=avg(r28.map(e=>safeNumeric(e.actual?.rpe)));
+  const pain=avg(r28.map(e=>Math.max(safeNumeric(e.actual?.painKnee)||0,safeNumeric(e.actual?.painQuad)||0)));
+  const heavyPct=r28.length?r28.filter(e=>e.actual?.legs==='Pesanti').length/r28.length:0;
+
+  /*
+   * ENVIRONMENT-AWARE EFFICIENCY
+   * Base = velocità / FC.
+   * Poi contestualizziamo la FC osservata per caldo e dislivello:
+   * - fino a 18 °C: nessuna correzione;
+   * - 18–24 °C: correzione lieve;
+   * - oltre 24 °C: correzione progressiva ma limitata;
+   * - D+ viene rapportato ai km e corretto con un tetto prudente.
+   *
+   * Non è una formula clinica: serve a evitare che il Coach Engine interpreti
+   * automaticamente caldo/salite come perdita di forma.
+   */
+  const environmentalEfficiency=e=>{
+    const sec=paceSecPerKm(e.actual?.pace);
+    const hr=safeNumeric(e.actual?.hrAvg);
+    const km=safeNumeric(e.actual?.distance)??safeNumeric(e.details?.km);
+    if(!sec||!hr||!km||km<=0)return null;
+
+    const temp=safeNumeric(e.actual?.temp);
+    const elev=safeNumeric(e.actual?.elev)||0;
+
+    let heatAdj=0;
+    if(temp!=null&&temp>18){
+      if(temp<=24) heatAdj=(temp-18)*0.0025;           // max ~1.5%
+      else heatAdj=0.015+(temp-24)*0.0045;            // più peso sopra 24 °C
+      heatAdj=Math.min(0.07,Math.max(0,heatAdj));      // tetto 7%
+    }
+
+    const elevPerKm=Math.max(0,elev/km);
+    const hillAdj=Math.min(0.08,elevPerKm*0.0012);     // tetto 8%
+
+    // Stimiamo quale sarebbe stata la FC in condizioni più neutre.
+    const correctedHr=hr/(1+heatAdj+hillAdj);
+    const speedMps=1000/sec;
+    return {
+      score:speedMps/correctedHr,
+      temp,
+      elevPerKm,
+      heatAdj,
+      hillAdj
+    }
+  };
+
+  const effPack=arr=>{
+    const packs=arr.map(environmentalEfficiency).filter(Boolean);
+    return {
+      score:avg(packs.map(x=>x.score)),
+      temp:avg(packs.map(x=>x.temp)),
+      elevPerKm:avg(packs.map(x=>x.elevPerKm)),
+      heatAdj:avg(packs.map(x=>x.heatAdj)),
+      hillAdj:avg(packs.map(x=>x.hillAdj))
+    }
+  };
+
+  const nowPack=effPack(r28),prevPack=effPack(prev28);
+  const effNow=nowPack.score,effPrev=prevPack.score;
+  const effDelta=(effNow&&effPrev)?(effNow-effPrev)/effPrev*100:null;
+
+  const planned=events.filter(e=>isRunType(e.type)&&parse(e.date)>=cutoff28&&parse(e.date)<=TODAY);
+  const adherence=planned.length?planned.filter(e=>e.status==='completed').length/planned.length*100:100;
+  const loadRatio=weeklyBase?km7/weeklyBase:1;
+
+  let score=75,reasons=[];
+  if(loadRatio>1.35){score-=18;reasons.push('volume ultimi 7 giorni molto sopra la media')}
+  else if(loadRatio>1.18){score-=8;reasons.push('volume settimanale in crescita')}
+  else if(loadRatio<.65&&r28.length>=3){score-=4;reasons.push('volume recente basso')}
+
+  if(rpe!=null){
+    if(rpe>=7){score-=16;reasons.push('RPE medio elevato')}
+    else if(rpe>=5.5){score-=7;reasons.push('RPE medio moderatamente alto')}
+    else if(rpe<=3.5){score+=5;reasons.push('RPE medio ben controllato')}
+  }
+  if(pain!=null){
+    if(pain>=4){score-=30;reasons.push('dolore medio alto')}
+    else if(pain>=2.5){score-=14;reasons.push('dolore da monitorare')}
+    else if(pain<=1){score+=5;reasons.push('dolore basso')}
+  }
+  if(heavyPct>=.5){score-=10;reasons.push('gambe pesanti frequenti')}
+  if(adherence<65){score-=8;reasons.push('aderenza recente bassa')}
+  else if(adherence>=90){score+=4;reasons.push('aderenza molto buona')}
+
+  if(effDelta!=null){
+    if(effDelta<=-4){score-=12;reasons.push('efficienza passo/FC corretta per ambiente in calo')}
+    else if(effDelta>=3){score+=8;reasons.push('efficienza passo/FC corretta per ambiente in miglioramento')}
+  }
+
+  // Informazione contestuale: il caldo non dà punti bonus, semplicemente evita
+  // di penalizzare impropriamente la FC. RPE/dolore continuano a pesare normalmente.
+  if(nowPack.temp!=null&&nowPack.temp>=27)reasons.push('FC contestualizzata per caldo elevato');
+  if(nowPack.elevPerKm!=null&&nowPack.elevPerKm>=12)reasons.push('passo/FC contestualizzati per dislivello');
+
+  score=Math.max(0,Math.min(100,Math.round(score)));
+  let decision='MAINTAIN';
+  if(score>=86)decision='PROGRESS';
+  else if(score<45)decision='RECOVER';
+  else if(score<65)decision='REDUCE';
+
+  return {
+    score,decision,km7,weeklyBase,rpe,pain,heavyPct,adherence,effDelta,
+    avgTemp:nowPack.temp,elevPerKm:nowPack.elevPerKm,
+    heatCorrection:nowPack.heatAdj,hillCorrection:nowPack.hillAdj,
+    reasons,runs28:r28.length
+  }
+}
+function adaptiveMultiplier(){
+  const a=adaptiveRunMetrics();
+  return a.decision==='PROGRESS'?1.04:a.decision==='REDUCE'?.90:a.decision==='RECOVER'?.78:1
+}
+function updateAdaptiveUI(){
+  const a=adaptiveRunMetrics();
+  const q=id=>document.getElementById(id);
+  if(q('adaptiveDecision'))q('adaptiveDecision').textContent=a.decision;
+  if(q('adaptiveScore'))q('adaptiveScore').textContent=a.score+'/100';
+  if(q('adaptiveKm7'))q('adaptiveKm7').textContent=a.km7.toFixed(1)+' km';
+  if(q('adaptiveRpe'))q('adaptiveRpe').textContent=a.rpe!=null?a.rpe.toFixed(1)+'/10':'—';
+  if(q('adaptiveEff'))q('adaptiveEff').textContent=a.effDelta!=null?(a.effDelta>=0?'+':'')+a.effDelta.toFixed(1)+'%':'baseline';
+  if(q('adaptiveSummary'))q('adaptiveSummary').textContent=
+    a.decision==='PROGRESS'?'Dati favorevoli: piccolo progresso consentito.':
+    a.decision==='REDUCE'?'Segnali di fatica: alleggerire il prossimo microciclo.':
+    a.decision==='RECOVER'?'Priorità recupero: evitare incremento di carico.':
+    'Carico coerente: mantieni la progressione prevista.';
+  if(q('adaptiveReason')){
+    const env=[];
+    if(a.avgTemp!=null)env.push(`T media ${a.avgTemp.toFixed(1)} °C`);
+    if(a.elevPerKm!=null)env.push(`D+ ${a.elevPerKm.toFixed(0)} m/km`);
+    q('adaptiveReason').textContent=(a.reasons.length?a.reasons.join(' • '):'Dati ancora insufficienti: progressione prudente.')+
+      ` • Aderenza ${Math.round(a.adherence)}%`+(env.length?' • '+env.join(' • '):'');
+  }
+}
+function adaptUpcomingRuns(){
+  const a=adaptiveRunMetrics();
+  const horizon=addDaysDate(TODAY,10);
+  events.forEach(e=>{
+    if(!isRunType(e.type)||e.type==='race'||e.status==='completed'||parse(e.date)<=TODAY||parse(e.date)>horizon)return;
+    e.metadata=e.metadata||{};
+    if(!e.metadata.adaptiveOriginal)e.metadata.adaptiveOriginal=structuredClone(e.details||{});
+    const base=e.metadata.adaptiveOriginal;
+    e.details={...e.details};
+
+    if(a.decision==='RECOVER'){
+      if(e.type==='quality'){
+        e.type='easy';e.title='Easy recupero';e.summary='6–7 km molto facili';
+        e.details={...e.details,km:Math.min(safeNumeric(base.km)||7,7),pace:"5'30–6'00/km",rpe:'1–2/10',
+          notes:'Adaptive Engine: qualità sospesa per recupero. Corsa facile; interrompi se dolore o fatica aumentano.'}
+      }else if(e.type==='long'){
+        e.details.km=Math.max(8,Math.round((safeNumeric(base.km)||14)*.72));
+        e.details.pace="5'25–5'55/km";e.details.rpe='2–3/10';
+        e.details.notes='Adaptive Engine: lungo ridotto per recupero.'
+      }else{
+        e.details.km=Math.max(5,Math.round((safeNumeric(base.km)||8)*.8));
+        e.details.rpe='1–2/10'
+      }
+    }else if(a.decision==='REDUCE'){
+      e.details.km=Math.max(6,Math.round((safeNumeric(base.km)||8)*.9));
+      if(e.type==='quality'){
+        e.details.rpe='5–6/10';
+        e.details.notes=(base.notes||'')+' • Adaptive Engine: volume ridotto ~10%; chiudi sempre controllato.'
+      }else{
+        e.details.notes=(base.notes||'')+' • Adaptive Engine: volume ridotto ~10%.'
+      }
+    }else if(a.decision==='PROGRESS'){
+      // Only easy/long get tiny volume increase; quality intensity is not increased automatically.
+      if(e.type==='easy'||e.type==='long'){
+        e.details.km=Math.round((safeNumeric(base.km)||8)*1.04);
+        e.details.notes=(base.notes||'')+' • Adaptive Engine: +4% volume per buona risposta recente.'
+      }
+    }else{
+      e.details={...base}
+    }
+    e.metadata.adaptiveDecision=a.decision;
+    e.metadata.adaptiveScore=a.score;
+  })
+}
+function dashboard(){
   let c=events.filter(e=>e.status==='completed'&&e.actual).sort((a,b)=>b.date.localeCompare(a.date)),last=c[0];
   if(last){
     let p=Math.max(safeNumeric(last.actual.painQuad)||0,safeNumeric(last.actual.painKnee)||0),
@@ -1408,7 +1631,8 @@ function renderNext(){let f=events.filter(e=>parse(e.date)>=TODAY&&e.status!=='c
       done=p.filter(e=>e.status==='completed').length,
       adh=p.length?Math.round(done/p.length*100):0;
   adherence.textContent=adh+'%';
-  adherenceBar.style.width=adh+'%'
+  adherenceBar.style.width=adh+'%';
+  updateAdaptiveUI()
 }
 function storageStatus(){let el=document.getElementById('storageChip');if(!el)return;try{localStorage.setItem('padova2027_test','1');localStorage.removeItem('padova2027_test');el.textContent='● dati salvati sul dispositivo';el.classList.add('ok')}catch(e){el.textContent='⚠ salvataggio limitato';el.classList.remove('ok')}}function refresh(){renderCalendar();renderNext();dashboard();storageStatus()}
 function openAIHub(){aiModal.classList.add('open');generateCoachPacket()}function generateCoachPacket(){let c=events.filter(e=>e.status==='completed'&&e.actual).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,8),f=events.filter(e=>parse(e.date)>TODAY&&!['strength','rest'].includes(e.type)).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,8),payload={athlete:'Francesco',goal:'Padova 18/04/2027 • target di lavoro 3h30',latestCompleted:c.map(e=>({id:e.id,date:e.date,title:e.title,planned:e.details,actual:e.actual})),nextRunningSessions:f.map(e=>({id:e.id,date:e.date,title:e.title,details:e.details}))};coachPacket.value=`Agisci come il coach del progetto Padova 2027 già definito in questa conversazione. Segui DATA → DECISION → PLAN. Modifica le prossime sedute SOLO se i dati lo giustificano. Non cambiare la palestra senza richiesta. Rispondi con una breve analisi e poi un blocco JSON valido: {"updates":[{"id":"ID_ESISTENTE","details":{"km":8,"pace":"5'20–5'45/km","rpe":"2–3/10","notes":"..."},"coachNote":"motivazione"}]}\n\nDATI APP:\n${JSON.stringify(payload,null,2)}`};async function copyPacket(){coachPacket.select();try{await navigator.clipboard.writeText(coachPacket.value)}catch(e){document.execCommand('copy')}}function applyAIResponse(){let raw=aiResponse.value.trim(),m=raw.match(/```(?:json)?\s*([\s\S]*?)```/i);if(m)raw=m[1].trim();try{let o=JSON.parse(raw),n=0;(o.updates||[]).forEach(u=>{let e=events.find(x=>x.id===u.id);if(!e)return;if(u.details)e.details={...e.details,...u.details};if(u.coachNote)e.details.notes=(e.details.notes?e.details.notes+' • ':'')+'AI: '+u.coachNote;n++});save();if(cloudUser)pushAllWorkouts().catch(console.error);aiApplyMsg.textContent='✓ Applicate '+n+' modifiche.'}catch(e){aiApplyMsg.textContent='Errore JSON: '+e.message}}function exportData(){let b=new Blob([JSON.stringify({version:1,events},null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='padova-2027-backup.json';a.click()}document.querySelectorAll('.modal').forEach(m=>m.addEventListener('click',e=>{if(e.target===m && m.id!=='authModal')m.classList.remove('open')}));refresh();
