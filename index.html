@@ -189,7 +189,7 @@ setTimeout(()=>{
 <div class="scoreline"><span>Profilo atleta</span><b id="profileState">—</b></div>
 <div class="scoreline"><span>Ultima sync</span><b id="lastSync">—</b></div>
 <button class="btn" style="width:100%;margin-top:10px" onclick="manualCloudSync()">Sincronizza adesso</button>
-</section><section class="card"><div class="section-title">Principio guida</div><div style="font-size:19px;font-weight:900">La continuità viene prima dell'eroismo.</div><p class="tiny">Nessun allenamento saltato viene “recuperato” aggiungendolo al giorno successivo.</p></section></aside></main><div class="footer">PADOVA 2027 • MULTISPORT 5.4</div></div>
+</section><section class="card"><div class="section-title">Principio guida</div><div style="font-size:19px;font-weight:900">La continuità viene prima dell'eroismo.</div><p class="tiny">Nessun allenamento saltato viene “recuperato” aggiungendolo al giorno successivo.</p></section></aside></main><div class="footer">PADOVA 2027 • MULTISPORT 5.4.1.1</div></div>
 <div class="modal" id="workoutModal"><div class="dialog"><div class="dialog-head"><div><div class="kicker" id="mPhase"></div><h3 id="mTitle"></h3></div><button class="close" onclick="closeModal('workoutModal')">×</button></div><div class="dialog-body" id="modalBody"></div></div></div>
 
 
@@ -303,6 +303,23 @@ function renderCalendar(){
     </div>`;
   }
   document.getElementById('calendar').innerHTML=out;
+}
+function strengthHTML(e){
+  let prog=STRENGTH.progression.map(r=>`<tr>${r.map(x=>`<td>${x}</td>`).join('')}</tr>`).join('');
+  return `<div class="info" style="margin-top:16px">
+    <h4>Strumenti palestra</h4>
+    <div class="tabs">
+      <button class="tab active" onclick="showTab(this,'stimer')">Timer recuperi</button>
+      <button class="tab" onclick="showTab(this,'sprog')">Progressioni coach</button>
+    </div>
+    <div id="stimer" class="stab">${timerHTML()}</div>
+    <div id="sprog" class="stab hidden">
+      <div class="tablewrap"><table>
+        <tr><th>Esercizio</th><th>Sett.1</th><th>Sett.2</th><th>Sett.3</th><th>Sett.4</th><th>Sett.5 deload</th></tr>${prog}
+      </table></div>
+    </div>
+    <div class="notice">Riscaldamento, parte principale e defaticamento vengono salvati nello storico della singola sessione A/B e sono modificabili manualmente.</div>
+  </div>`
 }
 function timerHTML(){return `<div class="timerdock"><div><div class="timerlabel">RECUPERO</div><div class="timerface" id="timerFace">01:30</div></div><div><div class="timerlabel" id="timerExercise">Timer palestra</div><div class="timerbuttons"><button class="timerpreset" onclick="setRestTimer(45,'Recupero')">45s</button><button class="timerpreset" onclick="setRestTimer(60,'Recupero')">60s</button><button class="timerpreset" onclick="setRestTimer(90,'Recupero')">90s</button><button class="timerpreset" onclick="setRestTimer(120,'Recupero')">120s</button></div></div><div class="timerbuttons"><button class="timerpreset timer-start" onclick="startTimer()">▶ Start</button><button class="timerpreset timer-stop" onclick="pauseTimer()">Ⅱ</button><button class="timerpreset" onclick="resetTimer()">↺</button></div></div>`}
 let timerTotal=90,timerLeft=90,timerHandle=null,timerRunning=false;function drawTimer(){let f=document.getElementById('timerFace');if(!f)return;let m=Math.floor(timerLeft/60),sec=timerLeft%60;f.textContent=String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0')}function setRestTimer(sec,label){pauseTimer();timerTotal=timerLeft=sec;let l=document.getElementById('timerExercise');if(l)l.textContent=label||'Recupero';drawTimer()}function startTimer(){if(timerRunning)return;timerRunning=true;timerHandle=setInterval(()=>{timerLeft=Math.max(0,timerLeft-1);drawTimer();if(timerLeft<=0){pauseTimer();let f=document.getElementById('timerFace');if(f){f.textContent='VAI!';f.style.color='var(--green)'}}},1000)}function pauseTimer(){timerRunning=false;if(timerHandle){clearInterval(timerHandle);timerHandle=null}}function resetTimer(){pauseTimer();timerLeft=timerTotal;let f=document.getElementById('timerFace');if(f)f.style.color='';drawTimer()}
