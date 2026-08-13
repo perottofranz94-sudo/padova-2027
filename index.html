@@ -48,7 +48,15 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background-ima
 .update-toast b{display:block;margin-bottom:4px}
 </style>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+setTimeout(()=>{
+  try{
+    cleanupReplacedByRace();
+    renderCalendar();
+  }catch(e){console.warn('cleanup race',e)}
+},250);
+
+</script>
 
 <style>
 .sync-ok{color:#a9f9c3!important;border-color:#255a40!important;background:#173f2c!important}
@@ -152,6 +160,17 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background-ima
 .run-summary{border-left:3px solid var(--cyan);padding:10px 12px;background:#0c1d27;border-radius:12px}
 @media(max-width:700px){.run-step-grid{grid-template-columns:1fr 1fr}}
 </style>
+
+<style>
+.event.race{
+  background:linear-gradient(135deg,#5a1018,#8f1f2c)!important;
+  color:#fff!important;
+  border-color:#d95867!important;
+  box-shadow:0 6px 18px rgba(143,31,44,.28)
+}
+.event.race .mini{color:#ffd7dc!important}
+.event.race:hover{border-color:#ff7b89!important;filter:brightness(1.06)}
+</style>
 </head>
 <body><div class="app">
 <header class="top"><div class="brand"><div class="logo">🏃</div><div><h1>PADOVA 2027 • AI COACH</h1><small>Francesco • Marathon Project • 18 aprile 2027</small></div></div><div class="top-actions">
@@ -170,7 +189,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background-ima
 <div class="scoreline"><span>Profilo atleta</span><b id="profileState">—</b></div>
 <div class="scoreline"><span>Ultima sync</span><b id="lastSync">—</b></div>
 <button class="btn" style="width:100%;margin-top:10px" onclick="manualCloudSync()">Sincronizza adesso</button>
-</section><section class="card"><div class="section-title">Principio guida</div><div style="font-size:19px;font-weight:900">La continuità viene prima dell'eroismo.</div><p class="tiny">Nessun allenamento saltato viene “recuperato” aggiungendolo al giorno successivo.</p></section></aside></main><div class="footer">PADOVA 2027 • MULTISPORT 5.3</div></div>
+</section><section class="card"><div class="section-title">Principio guida</div><div style="font-size:19px;font-weight:900">La continuità viene prima dell'eroismo.</div><p class="tiny">Nessun allenamento saltato viene “recuperato” aggiungendolo al giorno successivo.</p></section></aside></main><div class="footer">PADOVA 2027 • MULTISPORT 5.4</div></div>
 <div class="modal" id="workoutModal"><div class="dialog"><div class="dialog-head"><div><div class="kicker" id="mPhase"></div><h3 id="mTitle"></h3></div><button class="close" onclick="closeModal('workoutModal')">×</button></div><div class="dialog-body" id="modalBody"></div></div></div>
 
 
@@ -749,6 +768,24 @@ function raceAdapt(e,race,patch,reason){
   e.details.notes=(e.details.notes?e.details.notes+' • ':'')+'🏁 '+reason;
   e.metadata=e.metadata||{};e.metadata.raceAdaptedFor=race.id;
 }
+
+function cleanupReplacedByRace(){
+  const doomed=events.filter(e=>
+    e.status!=='completed' &&
+    (
+      String(e.summary||'').toLowerCase().includes('sostituito dalla gara') ||
+      String(e.details?.notes||'').toLowerCase().includes('sostituito dalla gara') ||
+      String(e.details?.notes||'').toLowerCase().includes('gara conteggiata come una delle 3 corse')
+    )
+  );
+  if(!doomed.length)return;
+  const ids=new Set(doomed.map(x=>x.id));
+  events=events.filter(x=>!ids.has(x.id));
+  localStorage.setItem('padova2027_events_v1',JSON.stringify(events));
+  if(cloudUser){
+    doomed.forEach(x=>sb.from('workouts').delete().eq('user_id',cloudUser.id).eq('client_event_id',x.id).then(()=>{}));
+  }
+}
 function recalibrateAroundRace(race){
   let r=race.metadata.race,dist=Number(r.distance_km),prio=r.priority||'C',changed=0;
   events.forEach(e=>{
@@ -784,19 +821,29 @@ function recalibrateAroundRace(race){
 function normalizeRaceWeek(race){
   let rd=parse(race.date),monday=new Date(rd);monday.setDate(rd.getDate()-((rd.getDay()+6)%7));let sunday=new Date(monday);sunday.setDate(monday.getDate()+6);
   let runs=events.filter(e=>e.id!==race.id&&isRunType(e.type)&&e.status!=='completed'&&parse(e.date)>=monday&&parse(e.date)<=sunday).sort((a,b)=>a.date.localeCompare(b.date));
-  if(runs.length>2){
-    let scored=runs.map(e=>({e,score:(e.type==='easy'?3:e.type==='quality'?2:1)+Math.abs(dateDiff(e.date,race.date))*.1})).sort((a,b)=>b.score-a.score);
-    let keep=scored.slice(0,2).map(x=>x.e);
-    let remove=runs.filter(x=>!keep.includes(x));
-    const ids=new Set(remove.map(x=>x.id));
-    events=events.filter(x=>!ids.has(x.id));
-    if(cloudUser)remove.forEach(x=>sb.from('workouts').delete().eq('user_id',cloudUser.id).eq('client_event_id',x.id).then(()=>{}));
+  if(runs.length<=2)return;
+
+  // Con una gara nella settimana vogliamo massimo altre 2 corse.
+  // Priorità: una easy + la seduta più utile/lontana dalla gara.
+  let ranked=runs.map(e=>{
+    let distanceFromRace=Math.abs(dateDiff(e.date,race.date));
+    let score=(e.type==='easy'?5:e.type==='quality'?3:e.type==='long'?2:1)+distanceFromRace*.15;
+    return {e,score};
+  }).sort((a,b)=>b.score-a.score);
+
+  let keep=ranked.slice(0,2).map(x=>x.e);
+  let remove=runs.filter(x=>!keep.includes(x));
+  const ids=new Set(remove.map(x=>x.id));
+  events=events.filter(x=>!ids.has(x.id));
+
+  if(cloudUser){
+    remove.forEach(x=>sb.from('workouts').delete().eq('user_id',cloudUser.id).eq('client_event_id',x.id).then(()=>{}));
   }
 }
 function raceAdaptationHTML(e){
   if(e.type!=='race'||!e.metadata?.race)return'';
   let r=e.metadata.race;
-  return `<div class="analysis green"><b>🏁 Race Engine</b><div class="tiny" style="margin-top:5px">${r.plan_adjusted?`Piano ricalibrato: ${r.changed_sessions||0} sedute adattate nei 14 giorni intorno alla gara.`:'La gara verrà usata per adattare il piano.'} La gara conta come una delle 3 corse settimanali; la palestra non viene modificata.</div></div>`
+  return `<div class="analysis green"><b>🏁 Race Engine</b><div class="tiny" style="margin-top:5px">${r.plan_adjusted?`Piano ricalibrato: ${r.changed_sessions||0} sedute adattate nei 14 giorni intorno alla gara.`:'La gara verrà usata per adattare il piano.'} La gara conta come una delle 3 corse settimanali. Le sedute non più necessarie vengono rimosse dal calendario; quelle utili vengono riscritte con il nuovo lavoro. La palestra non viene modificata.</div></div>`
 }
 
 function parseIntervalSpec(title,details){
