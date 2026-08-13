@@ -221,18 +221,18 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background-ima
   <div><b>Calendario personale</b><div class="save-state" id="calendarSaveState">Le modifiche restano locali finché non premi SALVA.</div></div>
   <button class="btn calendar-save-btn" id="calendarSaveBtn" type="button" onclick="saveCalendarAuthoritative()">💾 SALVA CALENDARIO</button>
 </div>
-</section><aside class="side"><section class="card"><div class="section-title">Prossimi allenamenti</div><div id="nextEvents"></div></section><section class="card"><div class="section-title">Adaptive Coach Engine</div>
+</section><aside class="side"><section class="card"><div class="section-title">Prossimi allenamenti</div><div id="nextEvents"></div></section><section class="card"><div class="section-title">Total Load Coach Engine</div>
 <div class="scoreline"><span>Aderenza</span><b id="adherence">—</b></div><div class="bar"><i id="adherenceBar"></i></div>
 <div class="scoreline"><span>Dolore/integrità</span><b id="injuryState">Basso</b></div>
 <div class="adaptive-card">
   <div class="adaptive-head"><div><b>Decisione carico</b><div class="tiny" id="adaptiveSummary">Analisi in corso…</div></div><span class="adaptive-badge" id="adaptiveDecision">MAINTAIN</span></div>
   <div class="adaptive-grid">
     <div class="metric"><span>Punteggio</span><b id="adaptiveScore">—</b></div>
-    <div class="metric"><span>Volume 7 gg</span><b id="adaptiveKm7">—</b></div>
-    <div class="metric"><span>RPE medio</span><b id="adaptiveRpe">—</b></div>
+    <div class="metric"><span>Carico 7 gg</span><b id="adaptiveKm7">—</b></div>
+    <div class="metric"><span>RPE globale</span><b id="adaptiveRpe">—</b></div>
     <div class="metric"><span>Eff. corretta</span><b id="adaptiveEff">—</b></div>
   </div>
-  <div class="adaptive-reason" id="adaptiveReason">Il motore usa volume, RPE, FC, temperatura, dislivello, dolore, gambe e aderenza.</div>
+  <div class="adaptive-reason" id="adaptiveReason">Il motore integra corsa, palestra e sport extra: volume, RPE, FC, temperatura, TSS, dolore e sensazione delle gambe.</div>
 </div>
 </section><section class="card">
 <div class="section-title">Cloud & atleta</div>
@@ -251,7 +251,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background-ima
   <div class="metric"><span>Palestra</span><b>2/sett.</b></div>
 </div>
 <button class="btn" style="width:100%;margin-top:10px" onclick="manualGenerateNextBlock()">Genera prossimo blocco ora</button>
-</section><section class="card"><div class="section-title">Principio guida</div><div style="font-size:19px;font-weight:900">La continuità viene prima dell'eroismo.</div><p class="tiny">Nessun allenamento saltato viene “recuperato” aggiungendolo al giorno successivo.</p></section></aside></main><div class="footer">PADOVA 2027 • AUTO PLAN 6.2.2 • ENV ADAPTIVE</div></div>
+</section><section class="card"><div class="section-title">Principio guida</div><div style="font-size:19px;font-weight:900">La continuità viene prima dell'eroismo.</div><p class="tiny">Nessun allenamento saltato viene “recuperato” aggiungendolo al giorno successivo.</p></section></aside></main><div class="footer">PADOVA 2027 • AUTO PLAN 6.3 • TOTAL LOAD</div></div>
 <div class="modal" id="workoutModal"><div class="dialog"><div class="dialog-head"><div><div class="kicker" id="mPhase"></div><h3 id="mTitle"></h3></div><button class="close" onclick="closeModal('workoutModal')">×</button></div><div class="dialog-body" id="modalBody"></div></div></div>
 
 
@@ -966,7 +966,9 @@ async function saveStrength41(id){
     legs:document.getElementById('s-legs').value,painKnee:val('s-knee'),painQuad:val('s-quad'),
     notes:document.getElementById('s-notes').value,strengthSets:sets,gymState
   };
-  e.status='completed';save();
+  e.status='completed';
+  adaptUpcomingRuns();
+  save();
 
   if(cloudUser){
     try{
@@ -994,14 +996,16 @@ function sportForm(e){
     <div><label>FC media</label><div class="unit-suffix"><input id="sp-hravg" type="number" value="${a.hrAvg??''}"><span>bpm</span></div></div>
     <div><label>FC max</label><div class="unit-suffix"><input id="sp-hrmax" type="number" value="${a.hrMax??''}"><span>bpm</span></div></div>
     <div><label>Dislivello positivo</label><div class="unit-suffix"><input id="sp-elev" type="number" value="${a.elev??''}"><span>m</span></div></div>
+    <div><label>Temperatura</label><div class="unit-suffix"><input id="sp-temp" type="number" step=".1" value="${a.temp??''}"><span>°C</span></div></div>
+    <div><label>TSS</label><input id="sp-tss" type="number" step=".1" value="${a.tss??''}" placeholder="se disponibile"></div>
     ${bike?`<div><label>Potenza media</label><div class="unit-suffix"><input id="sp-power" type="number" value="${a.power??''}"><span>W</span></div></div><div><label>Cadenza</label><div class="unit-suffix"><input id="sp-cadence" type="number" value="${a.cadence??''}"><span>rpm</span></div></div>`:''}
   </div><label>Note / sensazioni</label><textarea id="sp-notes">${a.notes??''}</textarea>
   <button class="btn green" onclick="saveSportActual('${e.id}')">Salva attività + cloud</button></div>`
 }
 function saveSportActual(id){
   let e=events.find(x=>x.id===id);if(!e)return;
-  e.actual={distance:val('sp-distance'),duration:document.getElementById('sp-duration')?.value||'',calories:val('sp-calories'),rpe:val('sp-rpe'),hrAvg:val('sp-hravg'),hrMax:val('sp-hrmax'),elev:val('sp-elev'),power:val('sp-power'),cadence:val('sp-cadence'),notes:document.getElementById('sp-notes')?.value||''};
-  e.status='completed';save();if(cloudUser)syncSingleEvent(id).catch(console.error);openWorkout(id)
+  e.actual={distance:val('sp-distance'),duration:document.getElementById('sp-duration')?.value||'',calories:val('sp-calories'),rpe:val('sp-rpe'),hrAvg:val('sp-hravg'),hrMax:val('sp-hrmax'),elev:val('sp-elev'),temp:val('sp-temp'),tss:val('sp-tss'),power:val('sp-power'),cadence:val('sp-cadence'),notes:document.getElementById('sp-notes')?.value||''};
+  e.status='completed';adaptUpcomingRuns();save();if(cloudUser){syncSingleEvent(id).catch(console.error);setTimeout(()=>pushAllWorkouts().catch(console.error),100)}openWorkout(id)
 }
 function evaluate(e){if(!e.actual)return['','In attesa dei dati','Inserisci i dati reali.'];let a=e.actual,p=Math.max(a.painQuad||0,a.painKnee||0);if(p>=5)return['red','STOP / ASSESS','Dolore ≥5/10: non aumentare il carico e rivalutare.'];if(p>=3)return['amber','ADAPT','Dolore 3–4/10: ridurre volume/intensità della prossima corsa.'];let t='Dolore basso e risposta compatibile con il programma.';if(a.hrMax>215)t+=' FC max anomala: picco sospetto.';if(a.if>1.05&&a.rpe<=4)t+=' IF/TSS probabilmente non calibrati.';if(a.distance>(e.details.km||0)*1.2)t+=' Volume superiore al previsto: niente premio aumentando ancora il carico.';return['green','READY',t]}function analysis(e){let x=evaluate(e);return comparisonHTML(e)+coachFeedback(e)+`<div class="analysis ${x[0]}"><b>${x[1]}</b><div class="tiny">${x[2]}</div></div>`}
 
@@ -1460,125 +1464,163 @@ function paceSecPerKm(p){
   return m?(+m[1]*60 + +m[2]):null
 }
 function adaptiveRunMetrics(){
-  const runs=events.filter(e=>isRunType(e.type)&&e.status==='completed'&&e.actual).sort((a,b)=>a.date.localeCompare(b.date));
-  const cutoff7=addDaysDate(TODAY,-7),cutoff28=addDaysDate(TODAY,-28),cutoff56=addDaysDate(TODAY,-56);
-  const r7=runs.filter(e=>parse(e.date)>=cutoff7);
-  const r28=runs.filter(e=>parse(e.date)>=cutoff28);
-  const prev28=runs.filter(e=>parse(e.date)>=cutoff56&&parse(e.date)<cutoff28);
+  const completed=events.filter(e=>e.status==='completed'&&e.actual).sort((a,b)=>a.date.localeCompare(b.date));
+  const runs=completed.filter(e=>isRunType(e.type));
+  const gyms=completed.filter(e=>e.type==='strength');
+  const extras=completed.filter(e=>!isRunType(e.type)&&e.type!=='strength'&&e.type!=='rest');
 
-  const sumKm=arr=>arr.reduce((s,e)=>s+(safeNumeric(e.actual?.distance)??safeNumeric(e.details?.km)??0),0);
+  const cutoff7=addDaysDate(TODAY,-7),cutoff28=addDaysDate(TODAY,-28),cutoff56=addDaysDate(TODAY,-56);
+  const inWindow=(arr,from,to=TODAY)=>arr.filter(e=>parse(e.date)>=from&&parse(e.date)<=to);
+  const r7=inWindow(runs,cutoff7),r28=inWindow(runs,cutoff28),prev28=runs.filter(e=>parse(e.date)>=cutoff56&&parse(e.date)<cutoff28);
+  const g7=inWindow(gyms,cutoff7),g28=inWindow(gyms,cutoff28);
+  const x7=inWindow(extras,cutoff7),x28=inWindow(extras,cutoff28);
+
   const avg=arr=>{
     const v=arr.filter(x=>Number.isFinite(x));
     return v.length?v.reduce((a,b)=>a+b,0)/v.length:null
   };
-  const km7=sumKm(r7),km28=sumKm(r28);
-  const weeklyBase=km28/4 || recentWeeklyRunKm();
+  const durationMin=v=>{
+    if(!v)return null;
+    let s=String(v).trim();
+    if(/^\d+:\d{1,2}:\d{1,2}$/.test(s)){let [h,m,sec]=s.split(':').map(Number);return h*60+m+sec/60}
+    if(/^\d+:\d{1,2}$/.test(s)){let [a,b]=s.split(':').map(Number);return a*60+b}
+    let mh=s.match(/(\d+)\s*h/i), mm=s.match(/(\d+)\s*[′'m]/i);
+    if(mh)return +mh[1]*60+(mm?+mm[1]:0);
+    let n=s.match(/\d+(?:[.,]\d+)?/);return n?Number(n[0].replace(',','.')):null
+  };
+  const sumKm=arr=>arr.reduce((s,e)=>s+(safeNumeric(e.actual?.distance)??safeNumeric(e.details?.km)??0),0);
 
-  const rpe=avg(r28.map(e=>safeNumeric(e.actual?.rpe)));
-  const pain=avg(r28.map(e=>Math.max(safeNumeric(e.actual?.painKnee)||0,safeNumeric(e.actual?.painQuad)||0)));
-  const heavyPct=r28.length?r28.filter(e=>e.actual?.legs==='Pesanti').length/r28.length:0;
-
-  /*
-   * ENVIRONMENT-AWARE EFFICIENCY
-   * Base = velocità / FC.
-   * Poi contestualizziamo la FC osservata per caldo e dislivello:
-   * - fino a 18 °C: nessuna correzione;
-   * - 18–24 °C: correzione lieve;
-   * - oltre 24 °C: correzione progressiva ma limitata;
-   * - D+ viene rapportato ai km e corretto con un tetto prudente.
-   *
-   * Non è una formula clinica: serve a evitare che il Coach Engine interpreti
-   * automaticamente caldo/salite come perdita di forma.
-   */
+  // RUNNING-SPECIFIC EFFICIENCY, corrected for heat and D+.
   const environmentalEfficiency=e=>{
     const sec=paceSecPerKm(e.actual?.pace);
     const hr=safeNumeric(e.actual?.hrAvg);
     const km=safeNumeric(e.actual?.distance)??safeNumeric(e.details?.km);
     if(!sec||!hr||!km||km<=0)return null;
-
     const temp=safeNumeric(e.actual?.temp);
     const elev=safeNumeric(e.actual?.elev)||0;
-
     let heatAdj=0;
     if(temp!=null&&temp>18){
-      if(temp<=24) heatAdj=(temp-18)*0.0025;           // max ~1.5%
-      else heatAdj=0.015+(temp-24)*0.0045;            // più peso sopra 24 °C
-      heatAdj=Math.min(0.07,Math.max(0,heatAdj));      // tetto 7%
+      if(temp<=24)heatAdj=(temp-18)*0.0025;
+      else heatAdj=0.015+(temp-24)*0.0045;
+      heatAdj=Math.min(0.07,Math.max(0,heatAdj));
     }
-
     const elevPerKm=Math.max(0,elev/km);
-    const hillAdj=Math.min(0.08,elevPerKm*0.0012);     // tetto 8%
-
-    // Stimiamo quale sarebbe stata la FC in condizioni più neutre.
+    const hillAdj=Math.min(0.08,elevPerKm*0.0012);
     const correctedHr=hr/(1+heatAdj+hillAdj);
-    const speedMps=1000/sec;
-    return {
-      score:speedMps/correctedHr,
-      temp,
-      elevPerKm,
-      heatAdj,
-      hillAdj
-    }
+    return {score:(1000/sec)/correctedHr,temp,elevPerKm,heatAdj,hillAdj}
   };
-
   const effPack=arr=>{
     const packs=arr.map(environmentalEfficiency).filter(Boolean);
-    return {
-      score:avg(packs.map(x=>x.score)),
-      temp:avg(packs.map(x=>x.temp)),
-      elevPerKm:avg(packs.map(x=>x.elevPerKm)),
-      heatAdj:avg(packs.map(x=>x.heatAdj)),
-      hillAdj:avg(packs.map(x=>x.hillAdj))
+    return {score:avg(packs.map(x=>x.score)),temp:avg(packs.map(x=>x.temp)),elevPerKm:avg(packs.map(x=>x.elevPerKm))}
+  };
+  const nowPack=effPack(r28),prevPack=effPack(prev28);
+  const effDelta=(nowPack.score&&prevPack.score)?(nowPack.score-prevPack.score)/prevPack.score*100:null;
+
+  // Generic heat-aware HR strain for non-running sports.
+  const sportHrFactor=(e,allSameSport)=>{
+    const hr=safeNumeric(e.actual?.hrAvg);
+    if(!hr)return 1;
+    const baseline=avg(allSameSport.map(x=>safeNumeric(x.actual?.hrAvg)));
+    if(!baseline||baseline<=0)return 1;
+    const temp=safeNumeric(e.actual?.temp);
+    let observed=hr;
+    if(temp!=null&&temp>22){
+      const correction=Math.min(.06,(temp-22)*.004);
+      observed=hr/(1+correction);
     }
+    const delta=(observed-baseline)/baseline;
+    return 1+Math.max(-.05,Math.min(.12,delta*.45))
   };
 
-  const nowPack=effPack(r28),prevPack=effPack(prev28);
-  const effNow=nowPack.score,effPrev=prevPack.score;
-  const effDelta=(effNow&&effPrev)?(effNow-effPrev)/effPrev*100:null;
+  // Running load: TSS preferred, otherwise duration × RPE; km gives a small specificity term.
+  const runLoad=e=>{
+    const tss=safeNumeric(e.actual?.tss);
+    if(tss!=null)return tss;
+    const dur=durationMin(e.actual?.duration);
+    const rpe=safeNumeric(e.actual?.rpe);
+    const km=safeNumeric(e.actual?.distance)??safeNumeric(e.details?.km)??0;
+    if(dur&&rpe!=null)return dur*(rpe/10)*1.35 + km*.7;
+    return km*4
+  };
+
+  // Gym: deliberately simple per user preference: session RPE + leg feeling only.
+  const gymLoad=e=>{
+    const rpe=safeNumeric(e.actual?.rpe)??5;
+    const legs=String(e.actual?.legs||'Normali').toLowerCase();
+    let legFactor=1;
+    if(legs.includes('fresc'))legFactor=.75;
+    else if(legs.includes('normal'))legFactor=1;
+    else if(legs.includes('affatic'))legFactor=1.15;
+    else if(legs.includes('pesant'))legFactor=1.3;
+    else if(legs.includes('molto'))legFactor=1.45;
+    return rpe*7*legFactor;
+  };
+
+  // Other sports: TSS + RPE + HR + temperature. If TSS absent, duration × RPE is the base.
+  const extraLoad=e=>{
+    const tss=safeNumeric(e.actual?.tss);
+    const dur=durationMin(e.actual?.duration);
+    const rpe=safeNumeric(e.actual?.rpe)??4;
+    const same=extras.filter(x=>x.type===e.type&&x.id!==e.id&&parse(x.date)>=cutoff56);
+    const hrF=sportHrFactor(e,same);
+    let base=tss!=null?tss:(dur?dur*(rpe/10):rpe*6);
+    const sportFactor={roadbike:.78,gravel:.85,mtb:.92,swim:.68,walk:.45,hike:.72,other:.70}[e.type]??.75;
+    return base*hrF*sportFactor
+  };
+
+  const sumLoad=(arr,fn)=>arr.reduce((s,e)=>s+fn(e),0);
+  const run7=sumLoad(r7,runLoad),gym7=sumLoad(g7,gymLoad),extra7=sumLoad(x7,extraLoad);
+  const run28=sumLoad(r28,runLoad),gym28=sumLoad(g28,gymLoad),extra28=sumLoad(x28,extraLoad);
+  const total7=run7+gym7+extra7;
+  const weeklyBase=(run28+gym28+extra28)/4 || total7 || 1;
+  const loadRatio=total7/weeklyBase;
+
+  const rpeAll=avg(inWindow(completed,cutoff28).map(e=>safeNumeric(e.actual?.rpe)));
+  const pain=avg(r28.map(e=>Math.max(safeNumeric(e.actual?.painKnee)||0,safeNumeric(e.actual?.painQuad)||0)));
+  const gymHeavyPct=g28.length?g28.filter(e=>/pesant/i.test(String(e.actual?.legs||''))).length/g28.length:0;
+  const runHeavyPct=r28.length?r28.filter(e=>e.actual?.legs==='Pesanti').length/r28.length:0;
+  const heavyPct=Math.max(gymHeavyPct,runHeavyPct);
 
   const planned=events.filter(e=>isRunType(e.type)&&parse(e.date)>=cutoff28&&parse(e.date)<=TODAY);
   const adherence=planned.length?planned.filter(e=>e.status==='completed').length/planned.length*100:100;
-  const loadRatio=weeklyBase?km7/weeklyBase:1;
 
-  let score=75,reasons=[];
-  if(loadRatio>1.35){score-=18;reasons.push('volume ultimi 7 giorni molto sopra la media')}
-  else if(loadRatio>1.18){score-=8;reasons.push('volume settimanale in crescita')}
-  else if(loadRatio<.65&&r28.length>=3){score-=4;reasons.push('volume recente basso')}
+  let score=76,reasons=[];
+  if(loadRatio>1.40){score-=22;reasons.push('carico totale 7 giorni molto sopra la media')}
+  else if(loadRatio>1.20){score-=10;reasons.push('carico totale settimanale in crescita')}
+  else if(loadRatio<.60&&completed.length>=4){score-=3;reasons.push('carico recente basso')}
 
-  if(rpe!=null){
-    if(rpe>=7){score-=16;reasons.push('RPE medio elevato')}
-    else if(rpe>=5.5){score-=7;reasons.push('RPE medio moderatamente alto')}
-    else if(rpe<=3.5){score+=5;reasons.push('RPE medio ben controllato')}
+  if(rpeAll!=null){
+    if(rpeAll>=7){score-=16;reasons.push('RPE globale elevato')}
+    else if(rpeAll>=5.5){score-=7;reasons.push('RPE globale moderatamente alto')}
+    else if(rpeAll<=3.5){score+=4;reasons.push('RPE globale ben controllato')}
   }
   if(pain!=null){
-    if(pain>=4){score-=30;reasons.push('dolore medio alto')}
-    else if(pain>=2.5){score-=14;reasons.push('dolore da monitorare')}
-    else if(pain<=1){score+=5;reasons.push('dolore basso')}
+    if(pain>=4){score-=30;reasons.push('dolore running medio alto')}
+    else if(pain>=2.5){score-=14;reasons.push('dolore running da monitorare')}
+    else if(pain<=1){score+=4;reasons.push('dolore running basso')}
   }
-  if(heavyPct>=.5){score-=10;reasons.push('gambe pesanti frequenti')}
-  if(adherence<65){score-=8;reasons.push('aderenza recente bassa')}
-  else if(adherence>=90){score+=4;reasons.push('aderenza molto buona')}
-
+  if(gymHeavyPct>=.5){score-=10;reasons.push('gambe pesanti dopo palestra')}
+  if(runHeavyPct>=.5){score-=7;reasons.push('gambe pesanti nelle corse')}
+  if(adherence<65){score-=7;reasons.push('aderenza running recente bassa')}
+  else if(adherence>=90){score+=3;reasons.push('aderenza running molto buona')}
   if(effDelta!=null){
-    if(effDelta<=-4){score-=12;reasons.push('efficienza passo/FC corretta per ambiente in calo')}
-    else if(effDelta>=3){score+=8;reasons.push('efficienza passo/FC corretta per ambiente in miglioramento')}
+    if(effDelta<=-4){score-=10;reasons.push('efficienza passo/FC corretta per ambiente in calo')}
+    else if(effDelta>=3){score+=6;reasons.push('efficienza passo/FC corretta per ambiente in miglioramento')}
   }
-
-  // Informazione contestuale: il caldo non dà punti bonus, semplicemente evita
-  // di penalizzare impropriamente la FC. RPE/dolore continuano a pesare normalmente.
-  if(nowPack.temp!=null&&nowPack.temp>=27)reasons.push('FC contestualizzata per caldo elevato');
-  if(nowPack.elevPerKm!=null&&nowPack.elevPerKm>=12)reasons.push('passo/FC contestualizzati per dislivello');
+  if(extra7>weeklyBase*.40)reasons.push('sport extra con impatto rilevante sul carico');
+  if(gym7>weeklyBase*.30)reasons.push('palestra con impatto rilevante sul recupero');
 
   score=Math.max(0,Math.min(100,Math.round(score)));
   let decision='MAINTAIN';
-  if(score>=86)decision='PROGRESS';
+  if(score>=87)decision='PROGRESS';
   else if(score<45)decision='RECOVER';
   else if(score<65)decision='REDUCE';
 
+  const km7=sumKm(r7);
   return {
-    score,decision,km7,weeklyBase,rpe,pain,heavyPct,adherence,effDelta,
+    score,decision,km7,total7,weeklyBase,rpe:rpeAll,pain,heavyPct,adherence,effDelta,
     avgTemp:nowPack.temp,elevPerKm:nowPack.elevPerKm,
-    heatCorrection:nowPack.heatAdj,hillCorrection:nowPack.hillAdj,
+    runLoad7:run7,gymLoad7:gym7,extraLoad7:extra7,loadRatio,
     reasons,runs28:r28.length
   }
 }
@@ -1591,7 +1633,7 @@ function updateAdaptiveUI(){
   const q=id=>document.getElementById(id);
   if(q('adaptiveDecision'))q('adaptiveDecision').textContent=a.decision;
   if(q('adaptiveScore'))q('adaptiveScore').textContent=a.score+'/100';
-  if(q('adaptiveKm7'))q('adaptiveKm7').textContent=a.km7.toFixed(1)+' km';
+  if(q('adaptiveKm7'))q('adaptiveKm7').textContent=Math.round(a.total7)+' pts';
   if(q('adaptiveRpe'))q('adaptiveRpe').textContent=a.rpe!=null?a.rpe.toFixed(1)+'/10':'—';
   if(q('adaptiveEff'))q('adaptiveEff').textContent=a.effDelta!=null?(a.effDelta>=0?'+':'')+a.effDelta.toFixed(1)+'%':'baseline';
   if(q('adaptiveSummary'))q('adaptiveSummary').textContent=
@@ -1601,11 +1643,15 @@ function updateAdaptiveUI(){
     'Carico coerente: mantieni la progressione prevista.';
   if(q('adaptiveReason')){
     const env=[];
-    if(a.avgTemp!=null)env.push(`T media ${a.avgTemp.toFixed(1)} °C`);
+    if(a.avgTemp!=null)env.push(`T corsa ${a.avgTemp.toFixed(1)} °C`);
     if(a.elevPerKm!=null)env.push(`D+ ${a.elevPerKm.toFixed(0)} m/km`);
     q('adaptiveReason').textContent=(a.reasons.length?a.reasons.join(' • '):'Dati ancora insufficienti: progressione prudente.')+
       ` • Aderenza ${Math.round(a.adherence)}%`+(env.length?' • '+env.join(' • '):'');
   }
+  if(q('loadRun'))q('loadRun').textContent=Math.round(a.runLoad7)+' pts';
+  if(q('loadGym'))q('loadGym').textContent=Math.round(a.gymLoad7)+' pts';
+  if(q('loadExtra'))q('loadExtra').textContent=Math.round(a.extraLoad7)+' pts';
+  if(q('loadFatigue'))q('loadFatigue').textContent=a.loadRatio.toFixed(2)+'×';
 }
 function adaptUpcomingRuns(){
   const a=adaptiveRunMetrics();
