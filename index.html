@@ -203,7 +203,97 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background-ima
 <style>
 .event.dragging{opacity:.45;transform:scale(.98)}
 .day.dragover{outline:2px solid var(--cyan);outline-offset:-2px;background:rgba(67,213,255,.10)!important}
-</style></head>
+</style>
+<style>
+/* iPhone / touch UI */
+@media(max-width:700px){
+  body{font-size:14px}
+  .app{padding:8px 8px calc(18px + env(safe-area-inset-bottom))}
+  .top{
+    position:sticky;top:env(safe-area-inset-top);padding:10px 11px;border-radius:14px;
+    gap:8px;align-items:center
+  }
+  .logo{width:38px;height:38px;border-radius:12px;font-size:20px}
+  .brand{gap:9px;min-width:0}.brand h1{font-size:14px}.brand small{font-size:10px}
+  .top .btn{padding:9px 10px;font-size:12px;min-height:42px}
+  .hero{grid-template-columns:1fr;gap:9px;margin:10px 0}
+  .card{border-radius:15px;padding:12px}
+  .grid{grid-template-columns:1fr;gap:10px}
+  .side{gap:10px}
+  .cal-head{align-items:flex-start;gap:8px}
+  .cal-title{font-size:20px}
+  .cal-nav{gap:6px}
+  .iconbtn{width:44px;height:44px;border-radius:13px;font-size:20px}
+  .legend{gap:5px;overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px}
+  .pill{white-space:nowrap;font-size:10px;padding:5px 7px}
+  .weekdays div{font-size:9px;padding:6px 1px}
+  .day{min-height:96px;padding:5px 3px}
+  .date-num{font-size:11px;margin-bottom:5px;padding-left:2px}
+  .day-add{width:28px;height:28px;top:4px;right:4px;border-radius:9px}
+  .event{
+    width:100%;padding:6px 4px;margin:3px 0;border-radius:8px;
+    font-size:9px;line-height:1.15;min-height:36px;overflow:hidden
+  }
+  .event .mini{font-size:8px;line-height:1.15;margin-top:2px}
+  .calendar-savebar{padding:10px;gap:8px}
+  .calendar-save-btn{min-height:48px;font-size:14px}
+  .btn,.sport-choice,.timerpreset{min-height:44px}
+  input,select,textarea{font-size:16px;min-height:44px} /* avoids iOS auto-zoom */
+  textarea{min-height:100px}
+  .modal,.add-session-modal,.gym-edit-modal{
+    padding:0;align-items:end
+  }
+  .dialog,.add-session-dialog,.gym-edit-dialog{
+    width:100%;max-width:none;max-height:94dvh;
+    border-radius:20px 20px 0 0;padding-bottom:calc(16px + env(safe-area-inset-bottom))
+  }
+  .dialog-head{padding:13px 14px}.dialog-body{padding:12px}
+  .dialog h3{font-size:19px}
+  .close,.gym-edit-close{min-width:44px;min-height:44px}
+  .two{grid-template-columns:1fr;gap:10px}
+  .formgrid{grid-template-columns:1fr 1fr;gap:8px}
+  .formgrid>div{min-width:0}
+  .metrics{grid-template-columns:repeat(2,1fr);gap:7px}
+  .metric{padding:8px;min-width:0}.metric b{font-size:13px}
+  .movebox{grid-template-columns:1fr 1fr;gap:8px}
+  .movebox>div{grid-column:1/-1}
+  .movebox .btn{width:100%}
+  .sport-grid{grid-template-columns:1fr 1fr;gap:7px}
+  .sport-choice{padding:10px 7px;font-size:12px}
+  .add-form-grid{grid-template-columns:1fr}
+  .gym-v41-top{grid-template-columns:1fr}
+  .gym-v41-card,.gym-v41-section,.gym-v41-item{padding:11px;border-radius:14px}
+  .gym-v41-name-row{flex-direction:column;gap:8px}
+  .gym-v41-buttons{width:100%;display:grid;grid-template-columns:1fr auto;gap:7px}
+  .gym-v41-buttons .btn{width:100%;font-size:12px}
+  .gym-v41-sets{grid-template-columns:1fr}
+  .gym-v41-set{grid-template-columns:38px 1fr 1fr;padding:7px}
+  .gym-warm-grid{grid-template-columns:1fr 1fr}
+  .gym-warm-grid .full{grid-column:1/-1}
+  .gym-v41-summary{grid-template-columns:1fr 1fr}
+  .gym-v41-actions{display:grid;grid-template-columns:1fr;gap:7px}
+  .gym-v41-actions .btn{width:100%}
+  .timerdock{
+    bottom:calc(6px + env(safe-area-inset-bottom));grid-template-columns:1fr;
+    padding:10px;border-radius:15px
+  }
+  .timerface{font-size:28px}
+  .timerbuttons{display:grid;grid-template-columns:repeat(3,1fr)}
+  .timerpreset{padding:8px 5px}
+  .run-step-grid,.adaptive-grid{grid-template-columns:1fr 1fr}
+  .unit-suffix span{min-width:48px}
+}
+@media(max-width:390px){
+  .formgrid{grid-template-columns:1fr}
+  .stats{grid-template-columns:1fr 1fr}
+  .day{min-height:90px}
+  .event{font-size:8.5px;padding:5px 3px}
+  .cal-nav .iconbtn{width:40px;height:40px}
+  .gym-v41-set{grid-template-columns:32px 1fr 1fr;gap:4px}
+}
+</style>
+
+</head>
 <body><div class="app">
 <header class="top"><div class="brand"><div class="logo">🏃</div><div><h1>PADOVA 2027 • AI COACH</h1><small>Francesco • Marathon Project • 18 aprile 2027</small></div></div><div class="top-actions">
 <button class="btn" id="installAppBtn" onclick="openInstallHelp()">＋ Installa app</button>
@@ -251,7 +341,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background-ima
   <div class="metric"><span>Palestra</span><b>2/sett.</b></div>
 </div>
 <button class="btn" style="width:100%;margin-top:10px" onclick="manualGenerateNextBlock()">Genera prossimo blocco ora</button>
-</section><section class="card"><div class="section-title">Principio guida</div><div style="font-size:19px;font-weight:900">La continuità viene prima dell'eroismo.</div><p class="tiny">Nessun allenamento saltato viene “recuperato” aggiungendolo al giorno successivo.</p></section></aside></main><div class="footer">PADOVA 2027 • AUTO PLAN 6.3 • TOTAL LOAD</div></div>
+</section><section class="card"><div class="section-title">Principio guida</div><div style="font-size:19px;font-weight:900">La continuità viene prima dell'eroismo.</div><p class="tiny">Nessun allenamento saltato viene “recuperato” aggiungendolo al giorno successivo.</p></section></aside></main><div class="footer">PADOVA 2027 • AUTO PLAN 6.3.1.1 • CLOUD GYM + MOBILE</div></div>
 <div class="modal" id="workoutModal"><div class="dialog"><div class="dialog-head"><div><div class="kicker" id="mPhase"></div><h3 id="mTitle"></h3></div><button class="close" onclick="closeModal('workoutModal')">×</button></div><div class="dialog-body" id="modalBody"></div></div></div>
 
 
@@ -943,6 +1033,63 @@ function rerenderGym41(){
   let d=e.details,planned=`<div class="info"><h4>Programmato</h4><div class="metrics"><div class="metric"><span>Sessione</span><b>${gymDay(e)}</b></div><div class="metric"><span>RPE</span><b>${d.rpe}</b></div><div class="metric"><span>Durata</span><b>${d.duration}</b></div></div><p><b>Note:</b> ${d.notes}</p></div>`;
   document.getElementById('modalBody').innerHTML=`<div class="two">${planned}${renderGym41(e,e.actual||{})}</div>${strengthHTML(e)}`
 }
+
+function strengthExercisesToActual(exercises){
+  if(!exercises)return null;
+  const main=Array.isArray(exercises)?exercises:(exercises.main||[]);
+  const strengthSets={};
+  const mainState=[];
+  main.forEach(x=>{
+    const name=x.name||x.exercise;
+    if(!name)return;
+    strengthSets[name]={
+      bodyweight:!!x.bodyweight,
+      unit:x.unit||'rep',
+      sets:Array.isArray(x.sets)?x.sets:[]
+    };
+    mainState.push({
+      name,
+      plan:x.plan||'3×10',
+      recovery:x.recovery||'90″',
+      notes:x.notes||'',
+      unit:x.unit||'rep'
+    })
+  });
+  return {
+    strengthSets,
+    gymState:{
+      main:mainState,
+      warmup:Array.isArray(exercises.warmup)?exercises.warmup:[],
+      cooldown:Array.isArray(exercises.cooldown)?exercises.cooldown:[]
+    }
+  }
+}
+async function loadCurrentStrengthCloud(e){
+  if(!cloudUser||e.type!=='strength')return;
+  const {data,error}=await sb.from('strength_sessions')
+    .select('*')
+    .eq('user_id',cloudUser.id)
+    .eq('client_event_id',e.id)
+    .limit(1);
+  if(error||!data?.length)return;
+  const row=data[0], recovered=strengthExercisesToActual(row.exercises);
+  e.actual=e.actual||{};
+  if(recovered){
+    e.actual.strengthSets=recovered.strengthSets;
+    e.actual.gymState=recovered.gymState;
+  }
+  e.actual.duration=e.actual.duration|| (row.duration_minutes!=null?String(row.duration_minutes):'');
+  e.actual.rpe=e.actual.rpe??row.session_rpe;
+  e.actual.hrAvg=e.actual.hrAvg??row.avg_hr;
+  e.actual.hrMax=e.actual.hrMax??row.max_hr;
+  e.actual.calories=e.actual.calories??row.calories_kcal;
+  e.actual.painKnee=e.actual.painKnee??row.pain_knee;
+  e.actual.painQuad=e.actual.painQuad??row.pain_quad;
+  e.actual.legs=e.actual.legs||row.legs_feeling||'';
+  e.actual.notes=e.actual.notes||row.notes||'';
+  localStorage.setItem('padova2027_events_v1',JSON.stringify(events));
+  if(gymActiveId===e.id)rerenderGym41();
+}
 async function loadPreviousCloud(e){
   if(!cloudUser)return;
   let {data,error}=await sb.from('strength_sessions').select('*').eq('user_id',cloudUser.id).eq('session_name','Palestra '+gymDay(e)).lt('session_date',e.date).order('session_date',{ascending:false}).limit(1);
@@ -980,6 +1127,7 @@ async function saveStrength41(id){
         exercises,duration_minutes:minutes41(e.actual.duration),session_rpe:e.actual.rpe,avg_hr:e.actual.hrAvg,max_hr:e.actual.hrMax,
         calories_kcal:e.actual.calories,pain_knee:e.actual.painKnee,pain_quad:e.actual.painQuad,legs_feeling:e.actual.legs,completed:true,notes:e.actual.notes
       },{onConflict:'user_id,client_event_id'});
+      await syncSingleEvent(id);
       setCloudState('ok','● cloud sincronizzato')
     }catch(err){console.error(err);setCloudState('warn','⚠ errore cloud')}
   }
@@ -1453,7 +1601,12 @@ function openWorkout(id){
   else right=form(e);
   document.getElementById('modalBody').innerHTML=`<div class="two">${planned}${right}</div>${runPlanHTML(e)}${e.type==='strength'?strengthHTML(e):''}`;
   document.getElementById('workoutModal').classList.add('open');
-  if(e.type==='strength'&&cloudUser)loadPreviousCloud(e).catch(console.error)
+  if(e.type==='strength'&&cloudUser){
+    Promise.all([
+      loadCurrentStrengthCloud(e).catch(console.error),
+      loadPreviousCloud(e).catch(console.error)
+    ]);
+  }
 }
 function moveWorkout(id,newDate,fromDrag){if(!newDate)return;let e=events.find(x=>x.id===id);if(!e)return;let conflicts=events.filter(x=>x.id!==id&&x.date===newDate&&x.type!=='rest');if(conflicts.length&&!fromDrag){if(!confirm('In questa data hai già: '+conflicts.map(x=>x.title).join(', ')+'. Vuoi comunque spostare la seduta qui?'))return}if(!e.originalDate)e.originalDate=e.date;e.date=newDate;save();if(document.getElementById('workoutModal').classList.contains('open'))openWorkout(id)}function restoreWorkout(id){let e=events.find(x=>x.id===id);if(!e||!e.originalDate)return;e.date=e.originalDate;delete e.originalDate;save();openWorkout(id)}
 function closeModal(id){document.getElementById(id).classList.remove('open')}
@@ -1913,7 +2066,16 @@ function workoutToRow(e) {
     workout_date: e.date,
     workout_type: e.type,
     sport: e.metadata?.sport || e.type,
-    workout_metadata: e.metadata || {},
+    workout_metadata: {
+      ...(e.metadata||{}),
+      ...(e.type==='strength' ? {
+        strength_actual: {
+          gymState: a.gymState || null,
+          strengthSets: a.strengthSets || null,
+          calories: a.calories ?? null
+        }
+      } : {})
+    },
     title: e.title,
     status: e.status || 'planned',
     planned_distance_km: safeNumeric(d.km),
@@ -1968,6 +2130,13 @@ function cloudRowToEvent(row, existing) {
   e.title=row.title || e.title;
   e.status=row.status || e.status;
   e.metadata=row.workout_metadata || e.metadata || (row.sport?{sport:row.sport}:{});
+  if(e.type==='strength' && row.workout_metadata?.strength_actual){
+    e.actual=e.actual||{};
+    const sa=row.workout_metadata.strength_actual;
+    if(sa.gymState)e.actual.gymState=sa.gymState;
+    if(sa.strengthSets)e.actual.strengthSets=sa.strengthSets;
+    if(sa.calories!==undefined&&sa.calories!==null)e.actual.calories=sa.calories;
+  }
   e.details=e.details||{};
   if(row.planned_distance_km!==null)e.details.km=Number(row.planned_distance_km);
   if(row.planned_pace_min_sec)e.details.pace=row.planned_pace_min_sec;
