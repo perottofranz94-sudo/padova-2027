@@ -293,6 +293,34 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background-ima
 }
 </style>
 
+
+<style>
+/* COACH CALENDAR 7 */
+.coach-hub{display:grid;gap:10px}
+.coach-hub .hub-note{padding:11px 12px;border-radius:13px;background:#0b1c27;border:1px solid #294456;color:var(--muted);font-size:11px;line-height:1.45}
+.run-builder{display:none;margin-top:14px;border:1px solid #315267;border-radius:16px;background:#091821;padding:12px}
+.run-builder.open{display:block}
+.run-builder-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px}
+.run-builder-actions{display:flex;gap:6px;flex-wrap:wrap}
+.run-block{border:1px solid #2a4252;background:#0d1e29;border-radius:14px;padding:11px;margin:8px 0}
+.run-block-top{display:flex;justify-content:space-between;gap:8px;align-items:center}
+.run-block-top b{font-size:13px}
+.run-block-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:8px}
+.run-block-grid .wide{grid-column:span 2}
+.run-structure-manual{display:grid;gap:8px;margin-top:10px}
+.run-structure-manual .run-step{border-left:3px solid var(--cyan)}
+.export-modal-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.export-presets{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0}
+.export-presets .btn{padding:8px 10px}
+.lock-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 7px;border-radius:999px;border:1px solid #2f5a45;background:#10281d;color:#aaf4c7;font-size:10px;font-weight:900}
+@media(max-width:700px){
+  .run-block-grid{grid-template-columns:1fr 1fr}
+  .run-block-grid .wide{grid-column:1/-1}
+  .run-builder-actions{display:grid;grid-template-columns:1fr 1fr}
+  .run-builder-actions .btn{width:100%}
+  .export-modal-grid{grid-template-columns:1fr}
+}
+</style>
 </head>
 <body><div class="app">
 <header class="top"><div class="brand"><div class="logo">🏃</div><div><h1>PADOVA 2027 • AI COACH</h1><small>Francesco • Marathon Project • 18 aprile 2027</small></div></div><div class="top-actions">
@@ -311,18 +339,11 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background-ima
   <div><b>Calendario personale</b><div class="save-state" id="calendarSaveState">Le modifiche restano locali finché non premi SALVA.</div></div>
   <button class="btn calendar-save-btn" id="calendarSaveBtn" type="button" onclick="saveCalendarAuthoritative()">💾 SALVA CALENDARIO</button>
 </div>
-</section><aside class="side"><section class="card"><div class="section-title">Prossimi allenamenti</div><div id="nextEvents"></div></section><section class="card"><div class="section-title">Total Load Coach Engine</div>
-<div class="scoreline"><span>Aderenza</span><b id="adherence">—</b></div><div class="bar"><i id="adherenceBar"></i></div>
-<div class="scoreline"><span>Dolore/integrità</span><b id="injuryState">Basso</b></div>
-<div class="adaptive-card">
-  <div class="adaptive-head"><div><b>Decisione carico</b><div class="tiny" id="adaptiveSummary">Analisi in corso…</div></div><span class="adaptive-badge" id="adaptiveDecision">MAINTAIN</span></div>
-  <div class="adaptive-grid">
-    <div class="metric"><span>Punteggio</span><b id="adaptiveScore">—</b></div>
-    <div class="metric"><span>Carico 7 gg</span><b id="adaptiveKm7">—</b></div>
-    <div class="metric"><span>RPE globale</span><b id="adaptiveRpe">—</b></div>
-    <div class="metric"><span>Eff. corretta</span><b id="adaptiveEff">—</b></div>
-  </div>
-  <div class="adaptive-reason" id="adaptiveReason">Il motore integra corsa, palestra e sport extra: volume, RPE, FC, temperatura, TSS, dolore e sensazione delle gambe.</div>
+</section><aside class="side"><section class="card"><div class="section-title">Prossimi allenamenti</div><div id="nextEvents"></div></section><section class="card">
+<div class="section-title">Coach Data Hub</div>
+<div class="coach-hub">
+  <div class="hub-note">L'app registra il calendario e i dati reali. La programmazione corsa viene inserita manualmente e non viene modificata automaticamente.</div>
+  <button class="btn primary" style="width:100%" onclick="openCoachExport()">⬇ Esporta dati per ChatGPT</button>
 </div>
 </section><section class="card">
 <div class="section-title">Cloud & atleta</div>
@@ -331,17 +352,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;background-ima
 <div class="scoreline"><span>Profilo atleta</span><b id="profileState">—</b></div>
 <div class="scoreline"><span>Ultima sync</span><b id="lastSync">—</b></div>
 <button class="btn" style="width:100%;margin-top:10px" onclick="manualCloudSync()">Sincronizza adesso</button>
-</section><section class="card">
-<div class="section-title">Auto Plan Engine</div>
-<div id="autoPlanStatus" class="tiny">Estensione automatica attiva.</div>
-<div class="plan-engine-grid">
-  <div class="metric"><span>Trigger</span><b>21 gg</b></div>
-  <div class="metric"><span>Blocco</span><b>6 sett.</b></div>
-  <div class="metric"><span>Corsa</span><b>3/sett.</b></div>
-  <div class="metric"><span>Palestra</span><b>2/sett.</b></div>
-</div>
-<button class="btn" style="width:100%;margin-top:10px" onclick="manualGenerateNextBlock()">Genera prossimo blocco ora</button>
-</section><section class="card"><div class="section-title">Principio guida</div><div style="font-size:19px;font-weight:900">La continuità viene prima dell'eroismo.</div><p class="tiny">Nessun allenamento saltato viene “recuperato” aggiungendolo al giorno successivo.</p></section></aside></main><div class="footer">PADOVA 2027 • AUTO PLAN 6.3.1.1 • CLOUD GYM + MOBILE</div></div>
+</section><section class="card"><div class="section-title">Principio guida</div><div style="font-size:19px;font-weight:900">Calendario, dati reali, programmazione consapevole.</div><p class="tiny">Le corse vengono programmate fuori dall'app e inserite manualmente; l'app conserva ciò che era previsto e ciò che hai realmente eseguito.</p></section></aside></main><div class="footer">PADOVA 2027 • COACH CALENDAR 7.0</div></div>
 <div class="modal" id="workoutModal"><div class="dialog"><div class="dialog-head"><div><div class="kicker" id="mPhase"></div><h3 id="mTitle"></h3></div><button class="close" onclick="closeModal('workoutModal')">×</button></div><div class="dialog-body" id="modalBody"></div></div></div>
 
 
@@ -597,15 +608,7 @@ function generateRunBlock(startDate,weeks=AUTO_BLOCK_WEEKS,{force=false}={}){
   if(cloudUser)pushAllWorkouts().catch(console.error);
   return created
 }
-function maybeAutoExtendPlan(){
-  const last=latestRunDate();if(!last)return;
-  const daysLeft=Math.round((parse(last)-TODAY)/86400000);
-  if(daysLeft>AUTO_TRIGGER_DAYS)return;
-  const nextStart=addDaysDate(startOfWeekMonday(parse(last)),7);
-  const already=events.some(e=>isRunType(e.type)&&e.metadata?.autoGenerated&&parse(e.date)>=nextStart);
-  if(already)return;
-  generateRunBlock(iso(nextStart),AUTO_BLOCK_WEEKS);
-}
+function maybeAutoExtendPlan(){ return; }
 function ensureStrengthYear(year){
   const start=new Date(year,0,1,12),end=new Date(year,11,31,12);
   let ws=startOfWeekMonday(start);
@@ -622,13 +625,9 @@ function yearHasGeneratedContent(year){
 function createNextYear(){
   const y=currentMonth.getFullYear()+1;
   ensureStrengthYear(y);
-  // If running plan reaches the boundary or target marathon lies in the new year, build first block too.
-  const last=latestRunDate();
-  const jan1=`${y}-01-01`;
-  if(!last || parse(last)<parse(jan1))generateRunBlock(jan1,AUTO_BLOCK_WEEKS);
   currentMonth=new Date(y,0,1,12);
   renderCalendar();
-  alert(`Anno ${y} creato: palestra A/B settimanale + primo blocco corsa progressivo.`)
+  alert(`Anno ${y} creato: mantenute solo le sedute palestra A/B. Le corse si inseriscono manualmente.`)
 }
 function updateYearTools(){
   const y=currentMonth.getFullYear();
@@ -641,13 +640,7 @@ function updateYearTools(){
   }
 }
 
-function manualGenerateNextBlock(){
-  const last=latestRunDate();
-  const next=last?iso(addDaysDate(startOfWeekMonday(parse(last)),7)):iso(startOfWeekMonday(TODAY));
-  const made=generateRunBlock(next,AUTO_BLOCK_WEEKS,{force:true});
-  renderCalendar();
-  alert(`Creato blocco di ${AUTO_BLOCK_WEEKS} settimane: ${made.length} nuove sedute di corsa.`)
-}
+function manualGenerateNextBlock(){alert('La programmazione corsa è manuale nella versione Coach Calendar.');}
 
 let draggedEventId=null;
 
@@ -691,7 +684,6 @@ function dropEventOnDay(ev,newDate){
   if(cloudUser)syncSingleEvent(id).catch(console.error);
 }
 function renderCalendar(){
-  enforceAllRaceRules();
   const year=currentMonth.getFullYear(), month=currentMonth.getMonth();
   document.getElementById('calTitle').textContent=currentMonth.toLocaleDateString('it-IT',{month:'long',year:'numeric'}).replace(/^./,x=>x.toUpperCase());
   const first=new Date(year,month,1,12);
@@ -787,7 +779,6 @@ function saveActual(id){
     notes:document.getElementById('d15')?.value||''
   };
   e.status='completed';
-  adaptUpcomingRuns();
   save();
   if(cloudUser){syncSingleEvent(id).catch(console.error);setTimeout(()=>pushAllWorkouts().catch(console.error),100)}
   openWorkout(id)
@@ -1114,7 +1105,6 @@ async function saveStrength41(id){
     notes:document.getElementById('s-notes').value,strengthSets:sets,gymState
   };
   e.status='completed';
-  adaptUpcomingRuns();
   save();
 
   if(cloudUser){
@@ -1153,10 +1143,68 @@ function sportForm(e){
 function saveSportActual(id){
   let e=events.find(x=>x.id===id);if(!e)return;
   e.actual={distance:val('sp-distance'),duration:document.getElementById('sp-duration')?.value||'',calories:val('sp-calories'),rpe:val('sp-rpe'),hrAvg:val('sp-hravg'),hrMax:val('sp-hrmax'),elev:val('sp-elev'),temp:val('sp-temp'),tss:val('sp-tss'),power:val('sp-power'),cadence:val('sp-cadence'),notes:document.getElementById('sp-notes')?.value||''};
-  e.status='completed';adaptUpcomingRuns();save();if(cloudUser){syncSingleEvent(id).catch(console.error);setTimeout(()=>pushAllWorkouts().catch(console.error),100)}openWorkout(id)
+  e.status='completed';save();if(cloudUser){syncSingleEvent(id).catch(console.error);setTimeout(()=>pushAllWorkouts().catch(console.error),100)}openWorkout(id)
 }
 function evaluate(e){if(!e.actual)return['','In attesa dei dati','Inserisci i dati reali.'];let a=e.actual,p=Math.max(a.painQuad||0,a.painKnee||0);if(p>=5)return['red','STOP / ASSESS','Dolore ≥5/10: non aumentare il carico e rivalutare.'];if(p>=3)return['amber','ADAPT','Dolore 3–4/10: ridurre volume/intensità della prossima corsa.'];let t='Dolore basso e risposta compatibile con il programma.';if(a.hrMax>215)t+=' FC max anomala: picco sospetto.';if(a.if>1.05&&a.rpe<=4)t+=' IF/TSS probabilmente non calibrati.';if(a.distance>(e.details.km||0)*1.2)t+=' Volume superiore al previsto: niente premio aumentando ancora il carico.';return['green','READY',t]}function analysis(e){let x=evaluate(e);return comparisonHTML(e)+coachFeedback(e)+`<div class="analysis ${x[0]}"><b>${x[1]}</b><div class="tiny">${x[2]}</div></div>`}
 
+
+let plannedRunBlocks=[];
+
+function addRunBlock(kind='Corsa'){
+  plannedRunBlocks.push({
+    kind,
+    repetitions: kind==='Ripetute'||kind==='Allunghi'?1:null,
+    distance:'',
+    distanceUnit:'km',
+    duration:'',
+    pace:'',
+    hrTarget:'',
+    recovery:'',
+    rpe:'',
+    notes:''
+  });
+  renderRunBlocks()
+}
+function removeRunBlock(i){plannedRunBlocks.splice(i,1);renderRunBlocks()}
+function updateRunBlock(i,key,value){
+  if(!plannedRunBlocks[i])return;
+  plannedRunBlocks[i][key]=(key==='repetitions' && value!=='')?Number(value):value
+}
+function renderRunBlocks(){
+  const root=document.getElementById('runBlocks');if(!root)return;
+  root.innerHTML=plannedRunBlocks.map((b,i)=>`<div class="run-block">
+    <div class="run-block-top"><b>${i+1}. ${b.kind}</b><button class="btn delete-session-btn" type="button" onclick="removeRunBlock(${i})">− Rimuovi</button></div>
+    <div class="run-block-grid">
+      <div><label>Tipo</label><select onchange="updateRunBlock(${i},'kind',this.value)">${['Riscaldamento','Corsa','Ripetute','Allunghi','Recupero','Defaticamento','Altro'].map(x=>`<option ${b.kind===x?'selected':''}>${x}</option>`).join('')}</select></div>
+      <div><label>Ripetizioni</label><input type="number" min="1" value="${b.repetitions??''}" placeholder="es. 6" oninput="updateRunBlock(${i},'repetitions',this.value)"></div>
+      <div><label>Distanza blocco</label><div style="display:grid;grid-template-columns:1fr .7fr;gap:5px"><input type="number" step=".01" value="${b.distance}" placeholder="es. 800" oninput="updateRunBlock(${i},'distance',this.value)"><select onchange="updateRunBlock(${i},'distanceUnit',this.value)"><option value="km" ${b.distanceUnit==='km'?'selected':''}>km</option><option value="m" ${b.distanceUnit==='m'?'selected':''}>m</option></select></div></div>
+      <div><label>Durata blocco</label><input value="${b.duration}" placeholder="es. 10:00 / 20 min" oninput="updateRunBlock(${i},'duration',this.value)"></div>
+      <div><label>Passo target</label><div class="unit-suffix"><input value="${b.pace}" placeholder="es. 4:00" oninput="updateRunBlock(${i},'pace',this.value)"><span>min/km</span></div></div>
+      <div><label>FC target</label><div class="unit-suffix"><input type="number" value="${b.hrTarget}" placeholder="es. 155" oninput="updateRunBlock(${i},'hrTarget',this.value)"><span>bpm</span></div></div>
+      <div><label>Recupero</label><input value="${b.recovery}" placeholder="es. 2:00 jogging" oninput="updateRunBlock(${i},'recovery',this.value)"></div>
+      <div><label>RPE target</label><input type="number" min="0" max="10" step=".5" value="${b.rpe}" oninput="updateRunBlock(${i},'rpe',this.value)"></div>
+      <div class="wide"><label>Note</label><input value="${String(b.notes||'').replace(/"/g,'&quot;')}" placeholder="Indicazioni del coach" oninput="updateRunBlock(${i},'notes',this.value)"></div>
+    </div>
+  </div>`).join('')
+}
+function manualRunStructureHTML(e){
+  const blocks=e.details?.structure;
+  if(!Array.isArray(blocks)||!blocks.length)return'';
+  return `<div class="info"><h4>Allenamento programmato • Workout Builder</h4><div class="run-structure-manual">${blocks.map((b,i)=>`
+    <div class="run-step">
+      <div class="run-step-head"><div class="run-step-title">${i+1}. ${b.kind||'Blocco'}</div>${e.metadata?.coachLocked?'<span class="lock-chip">🔒 coach locked</span>':''}</div>
+      <div class="run-step-grid">
+        <div class="metric"><span>Ripetizioni</span><b>${b.repetitions??'—'}</b></div>
+        <div class="metric"><span>Distanza</span><b>${b.distance?`${b.distance} ${b.distanceUnit||'km'}`:'—'}</b></div>
+        <div class="metric"><span>Durata</span><b>${b.duration||'—'}</b></div>
+        <div class="metric"><span>Passo</span><b>${b.pace?b.pace+' min/km':'—'}</b></div>
+        <div class="metric"><span>FC target</span><b>${b.hrTarget?b.hrTarget+' bpm':'—'}</b></div>
+        <div class="metric"><span>RPE</span><b>${b.rpe||'—'}</b></div>
+        <div class="metric"><span>Recupero</span><b>${b.recovery||'—'}</b></div>
+        <div class="metric"><span>Note</span><b>${b.notes||'—'}</b></div>
+      </div>
+    </div>`).join('')}</div></div>`
+}
 const EXTRA_SPORTS=[
   {id:'run',label:'🏃 Corsa'},
   {id:'race',label:'🏁 Gara corsa'},
@@ -1172,6 +1220,7 @@ let addSport='run';
 
 function openAddSession(date){
   addSport='run';
+  plannedRunBlocks=[];
   document.getElementById('newSessionDate').value=date;
   document.getElementById('newSessionName').value='';
   document.getElementById('newSessionDistance').value='';
@@ -1180,6 +1229,8 @@ function openAddSession(date){
   document.getElementById('newSessionNotes').value='';
   document.getElementById('sportGrid').innerHTML=EXTRA_SPORTS.map(s=>`<button class="sport-choice ${s.id==='run'?'active':''}" onclick="selectAddSport('${s.id}',this)">${s.label}</button>`).join('');
   document.getElementById('raceBox').classList.remove('open');
+  document.getElementById('runBuilder').classList.add('open');
+  renderRunBlocks();
   document.getElementById('addSessionModal').classList.add('open');
 }
 function closeAddSession(){document.getElementById('addSessionModal').classList.remove('open')}
@@ -1188,6 +1239,7 @@ function selectAddSport(id,btn){
   document.querySelectorAll('.sport-choice').forEach(x=>x.classList.remove('active'));
   btn.classList.add('active');
   document.getElementById('raceBox').classList.toggle('open',id==='race');
+  document.getElementById('runBuilder').classList.toggle('open',id==='run'||id==='race');
   if(id==='race'&&!document.getElementById('newSessionName').value)document.getElementById('newSessionName').value='Gara';
 }
 function sportTypeToClass(s){
@@ -1202,19 +1254,31 @@ function createSessionFromPlus(){
   let title=document.getElementById('newSessionName').value.trim()||EXTRA_SPORTS.find(x=>x.id===addSport)?.label.replace(/^[^ ]+ /,'')||'Sessione';
   const id=`manual-${date}-${Date.now()}`;
   let distance=val('newSessionDistance'),duration=document.getElementById('newSessionDuration').value,rpe=val('newSessionRpe'),notes=document.getElementById('newSessionNotes').value;
-  let e={id,date,originalDate:date,type:sportTypeToClass(addSport),title,phase:'Extra',status:'planned',summary:title,
-    details:{km:distance||0,duration:duration||'—',pace:'—',rpe:rpe??'—',fuel:'—',goal:'Sessione aggiunta manualmente',notes},
-    metadata:{sport:addSport,manual:true}
+  let e={
+    id,date,originalDate:date,type:sportTypeToClass(addSport),title,
+    phase:'Manuale',status:'planned',summary:title,
+    details:{km:distance||0,duration:duration||'—',pace:'—',rpe:rpe??'—',fuel:'—',goal:'Sessione inserita manualmente',notes},
+    metadata:{sport:addSport,manual:true,coachLocked:(addSport==='run'||addSport==='race')}
   };
+
+  if(addSport==='run'){
+    e.type='easy';
+    e.details.structure=structuredClone(plannedRunBlocks);
+    e.summary=plannedRunBlocks.length?plannedRunBlocks.map(b=>b.kind).join(' • '):title;
+  }
+
   if(addSport==='race'){
     let rd=document.getElementById('raceDistance').value;
     let dist=rd==='custom'?Number(document.getElementById('raceDistanceCustom').value||0):Number(rd);
-    e.type='race';e.title=title==='Gara'?`Gara ${dist?raceLabel(dist):''}`:title;e.summary='🏁 Gara';
-    e.metadata.race={distance_km:dist,priority:document.getElementById('racePriority').value,target_time:document.getElementById('raceTargetTime').value,plan_adjusted:false};
+    e.type='race';
+    e.title=title==='Gara'?`Gara ${dist?raceLabel(dist):''}`:title;
+    e.summary='🏁 Gara';
+    e.metadata.race={distance_km:dist,priority:document.getElementById('racePriority').value,target_time:document.getElementById('raceTargetTime').value};
     e.details.km=dist;
     e.details.goal='Gara di corsa';
+    e.details.structure=structuredClone(plannedRunBlocks);
   }
-  // If the day already has planned sessions, let the user decide what to remove.
+
   const existingSameDay=events.filter(x=>x.date===date&&x.status!=='completed');
   if(existingSameDay.length){
     const names=existingSameDay.map(x=>`• ${x.title}`).join('\n');
@@ -1222,18 +1286,13 @@ function createSessionFromPlus(){
     if(removeExisting){
       const ids=new Set(existingSameDay.map(x=>x.id));
       events=events.filter(x=>!ids.has(x.id));
-      if(cloudUser){
-        existingSameDay.forEach(x=>sb.from('workouts').delete().eq('user_id',cloudUser.id).eq('client_event_id',x.id).then(()=>{}));
-      }
+      if(cloudUser)existingSameDay.forEach(x=>sb.from('workouts').delete().eq('user_id',cloudUser.id).eq('client_event_id',x.id).then(()=>{}));
     }
   }
+
   events.push(e);
-  if(addSport==='race'){
-    dropRaceConflictingSessions(e);
-    recalibrateAroundRace(e);
-  }
   save();
-  if(cloudUser){pushAllWorkouts().catch(console.error)}
+  if(cloudUser)pushAllWorkouts().catch(console.error);
   closeAddSession();
   currentMonth=new Date(parse(date).getFullYear(),parse(date).getMonth(),1,12);
   renderCalendar();
@@ -1599,7 +1658,7 @@ function openWorkout(id){
   else if(e.type==='strength')right=form(e);
   else if(['roadbike','gravel','mtb','swim','walk','hike','other'].includes(e.type))right=sportForm(e);
   else right=form(e);
-  document.getElementById('modalBody').innerHTML=`<div class="two">${planned}${right}</div>${runPlanHTML(e)}${e.type==='strength'?strengthHTML(e):''}`;
+  document.getElementById('modalBody').innerHTML=`<div class="two">${planned}${right}</div>${manualRunStructureHTML(e)}${e.type==='strength'?strengthHTML(e):''}`;
   document.getElementById('workoutModal').classList.add('open');
   if(e.type==='strength'&&cloudUser){
     Promise.all([
@@ -1879,7 +1938,90 @@ function dashboard(){
   updateAdaptiveUI()
 }
 function storageStatus(){let el=document.getElementById('storageChip');if(!el)return;try{localStorage.setItem('padova2027_test','1');localStorage.removeItem('padova2027_test');el.textContent='● dati salvati sul dispositivo';el.classList.add('ok')}catch(e){el.textContent='⚠ salvataggio limitato';el.classList.remove('ok')}}function refresh(){renderCalendar();renderNext();dashboard();storageStatus()}
-function openAIHub(){aiModal.classList.add('open');generateCoachPacket()}function generateCoachPacket(){let c=events.filter(e=>e.status==='completed'&&e.actual).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,8),f=events.filter(e=>parse(e.date)>TODAY&&!['strength','rest'].includes(e.type)).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,8),payload={athlete:'Francesco',goal:'Padova 18/04/2027 • target di lavoro 3h30',latestCompleted:c.map(e=>({id:e.id,date:e.date,title:e.title,planned:e.details,actual:e.actual})),nextRunningSessions:f.map(e=>({id:e.id,date:e.date,title:e.title,details:e.details}))};coachPacket.value=`Agisci come il coach del progetto Padova 2027 già definito in questa conversazione. Segui DATA → DECISION → PLAN. Modifica le prossime sedute SOLO se i dati lo giustificano. Non cambiare la palestra senza richiesta. Rispondi con una breve analisi e poi un blocco JSON valido: {"updates":[{"id":"ID_ESISTENTE","details":{"km":8,"pace":"5'20–5'45/km","rpe":"2–3/10","notes":"..."},"coachNote":"motivazione"}]}\n\nDATI APP:\n${JSON.stringify(payload,null,2)}`};async function copyPacket(){coachPacket.select();try{await navigator.clipboard.writeText(coachPacket.value)}catch(e){document.execCommand('copy')}}function applyAIResponse(){let raw=aiResponse.value.trim(),m=raw.match(/```(?:json)?\s*([\s\S]*?)```/i);if(m)raw=m[1].trim();try{let o=JSON.parse(raw),n=0;(o.updates||[]).forEach(u=>{let e=events.find(x=>x.id===u.id);if(!e)return;if(u.details)e.details={...e.details,...u.details};if(u.coachNote)e.details.notes=(e.details.notes?e.details.notes+' • ':'')+'AI: '+u.coachNote;n++});save();if(cloudUser)pushAllWorkouts().catch(console.error);aiApplyMsg.textContent='✓ Applicate '+n+' modifiche.'}catch(e){aiApplyMsg.textContent='Errore JSON: '+e.message}}function exportData(){let b=new Blob([JSON.stringify({version:1,events},null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='padova-2027-backup.json';a.click()}document.querySelectorAll('.modal').forEach(m=>m.addEventListener('click',e=>{if(e.target===m && m.id!=='authModal')m.classList.remove('open')}));refresh();
+function openAIHub(){aiModal.classList.add('open');generateCoachPacket()}function generateCoachPacket(){let c=events.filter(e=>e.status==='completed'&&e.actual).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,8),f=events.filter(e=>parse(e.date)>TODAY&&!['strength','rest'].includes(e.type)).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,8),payload={athlete:'Francesco',goal:'Padova 18/04/2027 • target di lavoro 3h30',latestCompleted:c.map(e=>({id:e.id,date:e.date,title:e.title,planned:e.details,actual:e.actual})),nextRunningSessions:f.map(e=>({id:e.id,date:e.date,title:e.title,details:e.details}))};coachPacket.value=`Agisci come il coach del progetto Padova 2027 già definito in questa conversazione. Segui DATA → DECISION → PLAN. Modifica le prossime sedute SOLO se i dati lo giustificano. Non cambiare la palestra senza richiesta. Rispondi con una breve analisi e poi un blocco JSON valido: {"updates":[{"id":"ID_ESISTENTE","details":{"km":8,"pace":"5'20–5'45/km","rpe":"2–3/10","notes":"..."},"coachNote":"motivazione"}]}\n\nDATI APP:\n${JSON.stringify(payload,null,2)}`};async function copyPacket(){coachPacket.select();try{await navigator.clipboard.writeText(coachPacket.value)}catch(e){document.execCommand('copy')}}function applyAIResponse(){let raw=aiResponse.value.trim(),m=raw.match(/```(?:json)?\s*([\s\S]*?)```/i);if(m)raw=m[1].trim();try{let o=JSON.parse(raw),n=0;(o.updates||[]).forEach(u=>{let e=events.find(x=>x.id===u.id);if(!e)return;if(u.details)e.details={...e.details,...u.details};if(u.coachNote)e.details.notes=(e.details.notes?e.details.notes+' • ':'')+'AI: '+u.coachNote;n++});save();if(cloudUser)pushAllWorkouts().catch(console.error);aiApplyMsg.textContent='✓ Applicate '+n+' modifiche.'}catch(e){aiApplyMsg.textContent='Errore JSON: '+e.message}}
+function openCoachExport(){
+  const to=new Date(TODAY);
+  const from=addDaysDate(to,-41);
+  document.getElementById('exportFrom').value=iso(from);
+  document.getElementById('exportTo').value=iso(to);
+  document.getElementById('exportCoachNote').value='';
+  document.getElementById('coachExportModal').classList.add('open')
+}
+function setExportPreset(days){
+  const to=new Date(TODAY),from=addDaysDate(to,-(days-1));
+  document.getElementById('exportFrom').value=iso(from);
+  document.getElementById('exportTo').value=iso(to)
+}
+function eventForCoach(e){
+  const base={
+    id:e.id,date:e.date,sport:e.metadata?.sport||e.type,type:e.type,title:e.title,status:e.status,
+    planned:{
+      summary:e.summary||null,
+      distance_km:safeNumeric(e.details?.km),
+      duration:e.details?.duration||null,
+      pace_min_km:e.details?.pace||null,
+      rpe:e.details?.rpe??null,
+      goal:e.details?.goal||null,
+      notes:e.details?.notes||null,
+      structure:Array.isArray(e.details?.structure)?e.details.structure:null
+    },
+    actual:e.actual?{
+      distance_km:safeNumeric(e.actual.distance),
+      duration:e.actual.duration||null,
+      pace_min_km:e.actual.pace||null,
+      hr_avg_bpm:safeNumeric(e.actual.hrAvg),
+      hr_max_bpm:safeNumeric(e.actual.hrMax),
+      rpe:safeNumeric(e.actual.rpe),
+      temperature_c:safeNumeric(e.actual.temp),
+      elevation_gain_m:safeNumeric(e.actual.elev),
+      tss:safeNumeric(e.actual.tss),
+      calories_kcal:safeNumeric(e.actual.calories),
+      pain_knee_0_10:safeNumeric(e.actual.painKnee),
+      pain_quad_0_10:safeNumeric(e.actual.painQuad),
+      legs:e.actual.legs||null,
+      notes:e.actual.notes||null
+    }:null
+  };
+  if(e.type==='strength'&&e.actual){
+    base.actual.strength={
+      gym_state:e.actual.gymState||null,
+      sets:e.actual.strengthSets||null
+    }
+  }
+  if(e.type==='race')base.race=e.metadata?.race||null;
+  return base
+}
+function exportCoachData(){
+  const from=document.getElementById('exportFrom').value;
+  const to=document.getElementById('exportTo').value;
+  if(!from||!to||from>to){alert('Controlla le date del periodo.');return}
+  const selected=events.filter(e=>e.date>=from&&e.date<=to).sort((a,b)=>a.date.localeCompare(b.date));
+  const futureRaces=events.filter(e=>e.type==='race'&&e.date>to).sort((a,b)=>a.date.localeCompare(b.date)).map(eventForCoach);
+  const payload={
+    format:'PADOVA_2027_COACH_EXPORT',
+    version:'7.0',
+    exported_at:new Date().toISOString(),
+    period:{from,to},
+    coach_note:document.getElementById('exportCoachNote').value||null,
+    athlete_profile:typeof athleteProfile!=='undefined'?athleteProfile:null,
+    instructions_for_chatgpt:[
+      'Analizza programmato vs eseguito nel periodo.',
+      'Considera corsa, palestra e sport extra come carico complessivo.',
+      'Considera temperatura, FC, RPE, TSS, dislivello, dolore e sensazione gambe.',
+      'Proponi le sedute di corsa successive con Workout Builder dettagliato: riscaldamento, blocchi, passo min/km, FC bpm se utile, ripetizioni, recuperi, defaticamento e RPE.'
+    ],
+    events:selected.map(eventForCoach),
+    future_races:futureRaces
+  };
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`padova-coach-${from}_${to}.json`;
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000)
+}
+
+function exportData(){let b=new Blob([JSON.stringify({version:1,events},null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='padova-2027-backup.json';a.click()}document.querySelectorAll('.modal').forEach(m=>m.addEventListener('click',e=>{if(e.target===m && m.id!=='authModal')m.classList.remove('open')}));refresh();
 </script>
 <div class="update-toast" id="updateToast">
   <b>Nuova versione disponibile</b>
@@ -2371,7 +2513,24 @@ sb.auth.onAuthStateChange((event,session)=>{
       <div><label>RPE previsto</label><input id="newSessionRpe" type="number" min="0" max="10"></div>
       <div><label>Note</label><input id="newSessionNotes" placeholder="Indicazioni / obiettivo"></div>
     </div>
-    <div class="race-box" id="raceBox">
+    
+    <div class="run-builder" id="runBuilder">
+      <div class="run-builder-head">
+        <div><div class="kicker">WORKOUT BUILDER</div><b>Struttura programmata della corsa</b></div>
+        <span class="lock-chip">🔒 Coach locked</span>
+      </div>
+      <div class="run-builder-actions">
+        <button class="btn" type="button" onclick="addRunBlock('Riscaldamento')">＋ Riscaldamento</button>
+        <button class="btn" type="button" onclick="addRunBlock('Corsa')">＋ Corsa</button>
+        <button class="btn" type="button" onclick="addRunBlock('Ripetute')">＋ Ripetute</button>
+        <button class="btn" type="button" onclick="addRunBlock('Allunghi')">＋ Allunghi</button>
+        <button class="btn" type="button" onclick="addRunBlock('Defaticamento')">＋ Defaticamento</button>
+        <button class="btn" type="button" onclick="addRunBlock('Altro')">＋ Altro</button>
+      </div>
+      <div id="runBlocks"></div>
+      <div class="tiny">Ogni blocco può avere distanza/durata, passo in min/km, FC target in bpm, ripetizioni, recupero e RPE.</div>
+    </div>
+<div class="race-box" id="raceBox">
       <div class="section-title">Dettagli gara</div>
       <div class="add-form-grid">
         <div><label>Distanza gara</label>
@@ -2381,7 +2540,7 @@ sb.auth.onAuthStateChange((event,session)=>{
         <div><label>Priorità</label><select id="racePriority"><option value="A">A • obiettivo</option><option value="B">B • importante</option><option value="C">C • test/allenamento</option></select></div>
         <div><label>Tempo obiettivo</label><input id="raceTargetTime" placeholder="es. 45:00"></div>
       </div>
-      <div class="notice">La gara conterà come una delle 3 corse della settimana e il motore adatterà le sedute di corsa nei 14 giorni intorno all'evento. Le sedute palestra restano intatte.</div>
+      <div class="notice">La gara viene salvata nel calendario come obiettivo. Non modifica automaticamente le altre sedute: la programmazione corsa resta manuale.</div>
     </div>
     <button class="btn primary" style="width:100%;margin-top:14px" onclick="createSessionFromPlus()">Aggiungi al calendario</button>
   </div>
@@ -2400,12 +2559,34 @@ setTimeout(()=>{
 setTimeout(()=>{
   try{
     ensureStrengthYear(TODAY.getFullYear());
-    maybeAutoExtendPlan();
-    enforceAllRaceRules();
     renderCalendar();
     updateCalendarSavedState();
   }catch(e){console.warn('auto plan engine',e)}
 },700);
 </script>
+
+
+<div class="modal" id="coachExportModal">
+  <div class="dialog" style="max-width:680px">
+    <div class="dialog-head"><div><div class="kicker">COACH DATA HUB</div><h3>Esporta dati per ChatGPT</h3></div><button class="close" onclick="closeModal('coachExportModal')">×</button></div>
+    <div class="dialog-body">
+      <div class="notice">Scegli il periodo da esportare. Il file contiene programmato + eseguito, palestra, sport extra e gare comprese nel periodo, più le gare future.</div>
+      <div class="export-presets">
+        <button class="btn" onclick="setExportPreset(7)">Ultimi 7 giorni</button>
+        <button class="btn" onclick="setExportPreset(14)">Ultimi 14 giorni</button>
+        <button class="btn" onclick="setExportPreset(28)">Ultimi 28 giorni</button>
+        <button class="btn" onclick="setExportPreset(42)">Ultime 6 settimane</button>
+        <button class="btn" onclick="setExportPreset(56)">Ultime 8 settimane</button>
+      </div>
+      <div class="export-modal-grid">
+        <div><label>Dal</label><input id="exportFrom" type="date"></div>
+        <div><label>Al</label><input id="exportTo" type="date"></div>
+      </div>
+      <label style="margin-top:10px">Note per il coach (facoltative)</label>
+      <textarea id="exportCoachNote" placeholder="Es. questa settimana ho dormito poco / obiettivo principale..."></textarea>
+      <button class="btn green" style="width:100%;margin-top:12px" onclick="exportCoachData()">⬇ Esporta file Coach</button>
+    </div>
+  </div>
+</div>
 
 </body></html>
